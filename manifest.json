@@ -1,0 +1,10 @@
+{
+  "name": "Sabatia Fresh Mboga",
+  "short_name": "SabatiaFresh",
+  "description": "Mboga fresh kutoka Sabatia",
+  "start_url": "/Sabatia-green/",
+  "display": "standalone",
+  "background_color": "#2e7d32",
+  "theme_color": "#2e7d32",
+  "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/2909/2909761.png","sizes": "512x512","type": "image/png"}]
+}
