@@ -7,111 +7,107 @@
 <style>
 body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:10px}
 .header{text-align:center;color:#166534;font-weight:bold;font-size:22px;padding:10px}
-.box{border:2px solid #16a34a;border-radius:12px;padding:10px;background:white;margin:8px 0;text-align:center;font-size:14px}
-.btn{width:100%;padding:12px;border:none;border-radius:12px;font-weight:bold;margin:6px 0;cursor:pointer}
-.blue{background:#0ea5e9;color:white}
-.yellow{background:#fde68a;border:2px solid #f59e0b}
-.gray{background:#9ca3af;color:white}
-.product{background:white;border-radius:12px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-.product button{padding:6px 12px;border-radius:8px;border:none;font-weight:bold}
-.add{background:#16a34a;color:white}
-.sub{background:#fee2e2}
-input{width:100%;padding:12px;border-radius:12px;border:2px solid #16a34a;box-sizing:border-box;margin-top:5px}
+.box{background:white;border:1px solid #f59e0b;border-radius:12px;padding:10px;margin-top:10px}
+.box-yellow{background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:10px;margin-top:10px}
+.box-map{background:#e0f2fe;border-radius:12px;padding:10px;margin-top:10px;display:none}
+.product{background:white;border-radius:12px;padding:10px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 2px rgba(0,0,0,0.1)}
+.btn-green{background:#16a34a;color:white;border:none;border-radius:8px;padding:8px 12px;font-weight:bold}
+.btn-red{background:#fee2e2;color:#166534;border-radius:8px;border:none;padding:8px 12px}
+input{width:100%;padding:12px;border-radius:12px;border:1px solid #ddd;box-sizing:border-box}
+#orderBtn{width:100%;padding:14px;border-radius:12px;border:none;font-weight:bold;margin-top:10px}
+.btn-blue{background:#2563eb;color:white}
+.btn-gray{background:#9ca3af;color:white}
 </style>
 </head>
 <body>
-
 <div class="header" id="logo" style="cursor:pointer">🥬 Sabatia Fresh Mboga</div>
-<div class="box">
+<div class="box" style="text-align:center;font-size:14px">
 🚴 Delivery 20 KES | 💰 MPESA: 0790326587<br>
 📦 Order inaenda kwa wote wawili - Bonyeza kichwa mara 5 Admin
 </div>
-
-<button class="btn blue" onclick="getLocation()">📍 ONYESHA RAMANI - WEKA PIN MAHALI ULIPO</button>
-<div id="mapInfo" class="box" style="display:none"></div>
-
+<button class="box" style="width:100%;background:#0ea5e9;color:white;font-weight:bold;border:none;" onclick="getLocation()">📍 ONYESHA RAMANI - WEKA PIN MAHALI ULIPO</button>
+<div id="mapInfo" class="box-map"></div>
 <div class="box" style="text-align:left">
-🏠 Maelezo: e.g Nyumba ya blue, kwa chief...
+🏠 Maelezo: e.g Nyumba ya blue, kwa chief...<br>
 <input type="text" id="maelezo" placeholder="Andika maelezo yako hapa...">
 </div>
-
 <div id="products"></div>
-
-<div class="box yellow" style="font-weight:bold;font-size:18px" id="jumla">Jumla: 0 + 20 = 20 KES</div>
-<button class="btn gray" id="orderBtn">CHAGUA MBOGA KWANZA</button>
-
+<div class="box" style="border:2px dashed #16a34a;background:#f0fdf4;">
+<b>➕ Mboga haipo kwa list?</b>
+<input type="text" id="customMboga" placeholder="Andika hapa: Terere, Nyanya, Kitunguu...">
+</div>
+<div class="box-yellow" style="font-weight:bold;font-size:18px;text-align:center">
+<div id="jumla">Jumla: 0 + 20 = 20 KES</div>
+</div>
+<div id="orderBtnDiv"></div>
 <script>
 const products = [
-  { id:1, name:"🥚 Mayai (Tray 30)", price:600 },
-  { id:2, name:"🥬 Spinach", price:30 },
-  { id:3, name:"🥬 Sukuma Wiki", price:30 },
-  { id:4, name:"🌿 Kunde", price:40 },
-  { id:5, name:"🌿 Managu", price:50 },
-  { id:6, name:"🌿 Mitoo / Marejea", price:40 },
-  { id:7, name:"🌿 Mrenda", price:40 }
+{ id:1, name:"🥚 Mayai (Tray 30)", price:600 },
+{ id:2, name:"🥬 Spinach", price:30 },
+{ id:3, name:"🥬 Sukuma Wiki", price:30 },
+{ id:4, name:"🌿 Kunde", price:40 },
+{ id:5, name:"🌿 Managu", price:50 },
+{ id:6, name:"🌿 Mitoo / Marejea", price:40 },
+{ id:7, name:"🌿 Mrenda", price:40 }
 ];
-
-let cart = {};
-let locationLink = "";
-
+let cart = {}; let locationLink = "";
 function render(){
-  const div = document.getElementById('products');
-  div.innerHTML = "";
+  const div = document.getElementById('products'); div.innerHTML = "";
   products.forEach(p=>{
     const qty = cart[p.id] || 0;
-    div.innerHTML += `<div class="product"><div><b>${p.name}</b><br>${p.price} KES</div><div><button class="sub" onclick="changeQty(${p.id},-1)">-</button><span style="margin:0 8px">${qty}</span><button class="add" onclick="changeQty(${p.id},1)">+</button></div></div>`;
-  });
-  updateTotal();
+    div.innerHTML += `<div class="product"><div><b>${p.name}</b><br>${p.price} KES</div><div><button class="btn-red" onclick="changeQty(${p.id},-1)">-</button> ${qty} <button class="btn-green" onclick="changeQty(${p.id},1)">+</button></div></div>`;
+  }); updateTotal();
 }
-function changeQty(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; render(); }
+function changeQty(id,d){ cart[id] = (cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; render(); }
 function updateTotal(){
   let total=0; let has=false;
-  for(let id in cart){ const p=products.find(x=>x.id==id); total+=p.price*cart[id]; has=true; }
-  document.getElementById('jumla').innerText=`Jumla: ${has?total:0} + 20 = ${has?total+20:20} KES`;
-  const btn=document.getElementById('orderBtn');
-  if(has){ btn.innerText="TUMA ORDER KWA WHATSAPP"; btn.className="btn blue"; btn.onclick=sendOrder; }
-  else{ btn.innerText="CHAGUA MBOGA KWANZA"; btn.className="btn gray"; btn.onclick=null; }
+  for(let id in cart){ const p = products.find(x=>x.id==id); total+=p.price*cart[id]; has=true; }
+  document.getElementById('jumla').innerText = `Jumla: ${total} + 20 = ${total+20} KES`;
+  const btnDiv = document.getElementById('orderBtnDiv');
+  if(has || document.getElementById('customMboga').value.trim()!=""){
+    btnDiv.innerHTML = `<button class="btn-blue" id="orderBtn" onclick="sendOrder()">ORDER KWA WHATSAPP</button>`;
+  } else {
+    btnDiv.innerHTML = `<button class="btn-gray" id="orderBtn">CHAGUA MBOGA KWANZA</button>`;
+  }
 }
+document.addEventListener('input', function(e){ if(e.target.id==='customMboga') updateTotal(); });
 function getLocation(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    locationLink=`https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-    document.getElementById('mapInfo').style.display="block";
-    document.getElementById('mapInfo').innerHTML="✅ Mahali pako pamewekwa!<br><a href='"+locationLink+"' target='_blank'>Angalia Ramani</a>";
-  });
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      locationLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+      document.getElementById('mapInfo').style.display="block";
+      document.getElementById('mapInfo').innerHTML = `Mahali pako pamewekwa:<br><a href="${locationLink}" target="_blank">Angalia Ramani</a>`;
+    });
+  }
 }
 function sendOrder(){
-  let msg="*SABATIA FRESH MBOGA - ORDER*%0A%0A";
-  for(let id in cart){ const p=products.find(x=>x.id==id); msg+=`${p.name} x ${cart[id]} = ${p.price*cart[id]} KES%0A`; }
-  const maelezo=document.getElementById('maelezo').value;
-  if(locationLink) msg+=`%0A📍 Ramani: ${locationLink}%0A`;
-  if(maelezo) msg+=`🏠 Maelezo: ${maelezo}%0A`;
-  msg+=`%0A${document.getElementById('jumla').innerText}`;
+  let msg="*SABATIA FRESH MBOGA - ORDER MPYA:*\n\n";
+  let total=0; let has=false;
+  for(let id in cart){
+    const p = products.find(x=>x.id==id); const sub = p.price*cart[id];
+    msg+=`${p.name} x ${cart[id]} = ${sub} KES\n`; total+=sub; has=true;
+  }
+  const customMboga = document.getElementById('customMboga').value.trim();
+  if(customMboga){ msg+=`\n🥬 *CUSTOMER ANAOMBA: ${customMboga}*\n`; has=true; }
+  if(!has){ alert("Chagua mboga au andika mboga unayotaka!"); return; }
+  const maelezo = document.getElementById('maelezo').value;
+  msg+=`\nMaelezo: ${maelezo}\n`;
+  if(locationLink) msg+=`Ramani: ${locationLink}\n`;
+  msg+=`Jumla: ${total} + 20 = ${total+20} KES\n`;
   window.open(`https://wa.me/254790326587?text=${encodeURIComponent(msg)}`,'_blank');
-setTimeout(()=>{
-window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank');
-},800);
+  setTimeout(()=>{ window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank'); },800);
+  render();
 }
-render();
-
-// ADMIN - Bonyeza kichwa mara 5
-let adminClicks = 0;
-let lastClick = 0;
+let adminClicks=0; let lastClick=0;
 document.getElementById('logo').addEventListener('click', ()=>{
-  const now = Date.now();
-  if(now - lastClick > 3000) adminClicks = 0;
-  lastClick = now;
-  adminClicks++;
-  if(adminClicks >= 5){
-    adminClicks = 0;
-    const pass = prompt("Ingiza Admin Password:");
-    if(pass === "9032"){
-      alert("✅ Admin Mode ON");
-      window.location.href = "#admin";
-    }else if(pass !== null){
-      alert("❌ Password sio sahihi!");
-    }
+  const now = Date.now(); if(now-lastClick > 3000) adminClicks=0; lastClick=now; adminClicks++;
+  if(adminClicks >=5){
+    adminClicks=0; const pass = prompt("Ingiza Admin Password:");
+    if(pass==="1234"){ alert("Admin Mode ON"); window.location.href="admin.html"; }
+    else if(pass!==null){ alert("❌ Password sio sahihi"); }
   }
 });
+render();
 </script>
 </body>
 </html>
