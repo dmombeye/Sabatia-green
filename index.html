@@ -1,64 +1,72 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sabatia Fresh Mboga</title>
 <style>
 *{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#f6fdf6}
-.header{background:#2e7d32;color:white;padding:16px;text-align:center;font-weight:800;position:sticky;top:0;z-index:10}
+.header{background:#2e7d32;color:white;padding:16px;text-align:center;font-weight:800;font-size:18px;position:sticky;top:0;z-index:10;cursor:pointer}
 .sub{font-size:11px;font-weight:400;opacity:.9;margin-top:3px}
 .wrap{padding:12px;max-width:600px;margin:auto}
 .card{background:white;border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .prod{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
-.btn{background:#2e7d32;color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:700}
-input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
-.orderBtn{background:#2e7d32;color:white;width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px}
+.btn{background:#2e7d32;color:white;border:none;padding:8px 14px;border-radius:8px;font-weight:700}
+.btn-minus{width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#f5f5f5}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid #ddd;margin-top:8px;font-size:14px}
+.orderBtn{background:#2e7d32;color:white;width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:800;margin-top:12px}
 #adminPanel{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:9999;padding:15px;overflow:auto}
 </style>
 </head>
 <body>
-<div class="header" id="logo" style="cursor:pointer">🥬 Sabatia Fresh Mboga
+<div class="header" id="logo">🥬 Sabatia Fresh Mboga
 <div class="sub">Order inaenda kwa wote wawili - Bonyeza kichwa mara 5 Admin</div>
 </div>
-
 <div class="wrap">
-<div class="card"><h3>🛒 Mboga</h3><div id="products"></div></div>
 <div class="card">
-<h3>📍 Maelezo</h3>
+<h3 style="margin:0 0 8px">🛒 Mboga</h3>
+<div id="products"></div>
+</div>
+<div class="card">
+<h3 style="margin:0">➕ Mboga haipo hapa?</h3>
+<p style="font-size:12px;color:#666;margin:4px 0 0">Andika mboga unayotaka kama haipo kwa list</p>
+<input id="customMboga" placeholder="Mfano: Terere, Mrenda, Managu...">
+</div>
+<div class="card">
+<h3 style="margin:0 0 8px">📍 Maelezo</h3>
 <input id="maeleo" placeholder="Jina lako">
 <input id="ramo" placeholder="Namba yako">
-<select id="location"><option value="">Chagua Location</option><option>Sabatia</option><option>Mbale</option><option>Chavakali</option><option>Mudete</option><option>Luanda</option></select>
-<div style="margin-top:8px"><b>Total: KES <span id="total">0</span></b></div>
+<select id="location"><option value="">Chagua Location</option><option>Sabatia</option><option>Mbale</option><option>Chavakali</option><option>Mudete</option><option>Luanda</option><option>Other</option></select>
+<div style="margin-top:10px"><b>Total: KES <span id="total">0</span></b></div>
 <button class="orderBtn" onclick="sendOrder()">Tuma Order 📲</button>
-<p style="font-size:11px;text-align:center;color:#666">Inatuma kwa 0790326587 na 0111810602</p>
+<p style="font-size:11px;text-align:center;color:#888;margin-top:6px">Inatuma kwa 0790326587 na 0111810602</p>
 </div>
 </div>
-
 <div id="adminPanel">
 <h2>🛠️ Admin Panel</h2>
 <div id="adminProductsList"></div>
 <hr>
-<h4>Ongeza Mboga</h4>
-<input id="newName" placeholder="Jina"><input id="newPrice" type="number" placeholder="Bei">
-<button onclick="addProduct()" style="margin-top:8px;background:#2e7d32;color:white;padding:10px;border:none;border-radius:8px;width:100%">Ongeza</button>
+<h4>Ongeza Mboga Mpya</h4>
+<input id="newName" placeholder="Jina la mboga">
+<input id="newPrice" type="number" placeholder="Bei">
+<button onclick="addProduct()" style="margin-top:8px;background:#2e7d32;color:white;padding:12px;border:none;border-radius:8px;width:100%">Ongeza Mboga</button>
 <br><br>
-<button onclick="document.getElementById('adminPanel').style.display='none'" style="background:red;color:white;padding:12px;border:none;border-radius:8px;width:100%">Funga ❌</button>
+<button onclick="document.getElementById('adminPanel').style.display='none'" style="background:red;color:white;padding:12px;border:none;border-radius:10px;width:100%">Funga Admin ❌</button>
 </div>
-
 <script>
-let products=JSON.parse(localStorage.getItem('sabatia_products'))||[{name:"Sukuma",price:20},{name:"Spinach",price:30},{name:"Kunde",price:30},{name:"Cabbage",price:40},{name:"Nyanya",price:30},{name:"Kitunguu",price:30}];
+let products = JSON.parse(localStorage.getItem('sabatia_products')) || [{name:"Sukuma",price:20},{name:"Spinach",price:30},{name:"Kunde",price:30},{name:"Cabbage",price:40},{name:"Nyanya",price:30},{name:"Kitunguu",price:30}];
 let cart={};
 function saveProducts(){localStorage.setItem('sabatia_products',JSON.stringify(products))}
-function render(){const d=document.getElementById('products');d.innerHTML=products.map((p,i)=>`<div class="prod"><div><b>${p.name}</b><br><small>KES ${p.price}</small></div><div style="display:flex;gap:6px;align-items:center"><button onclick="changeQty(${i},-1)" style="width:30px;height:30px;border-radius:50%;border:1px solid #ddd">-</button><span id="q-${i}">${cart[i]||0}</span><button onclick="changeQty(${i},1)" class="btn">+</button></div></div>`).join('');updateTotal()}
+function render(){const d=document.getElementById('products');d.innerHTML=products.map((p,i)=>`<div class="prod"><div><b>${p.name}</b><br><small>KES ${p.price}</small></div><div style="display:flex;gap:8px;align-items:center"><button onclick="changeQty(${i},-1)" class="btn-minus">-</button><span id="q-${i}" style="min-width:20px;text-align:center;font-weight:700">${cart[i]||0}</span><button onclick="changeQty(${i},1)" class="btn">+</button></div></div>`).join('');updateTotal()}
 function changeQty(i,d){cart[i]=(cart[i]||0)+d;if(cart[i]<=0)delete cart[i];document.getElementById(`q-${i}`).innerText=cart[i]||0;updateTotal()}
 function updateTotal(){let t=0;for(let i in cart){t+=cart[i]*products[i].price}document.getElementById('total').innerText=t}
-function sendOrder(){let msg="*SABATIA ORDER:*\n\n";let total=0,has=false;for(let i in cart){msg+=`• ${products[i].name} x ${cart[i]} = ${products[i].price*cart[i]}\n`;total+=products[i].price*cart[i];has=true}if(!has){alert("Chagua mboga!");return}const maeleo=document.getElementById('maeleo').value;const ramo=document.getElementById('ramo').value;const loc=document.getElementById('location').value;msg+=`\nTOTAL: KES ${total}\nJina: ${maeleo}\nSimu: ${ramo}\nLocation: ${loc}\n`;window.open(`https://wa.me/254790326587?text=${encodeURIComponent(msg)}`,'_blank');setTimeout(()=>{window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank');},800);cart={};render()}
+function sendOrder(){let msg="*SABATIA FRESH MBOGA ORDER:*\n\n";let total=0;let has=false;for(let i in cart){const sub=products[i].price*cart[i];msg+=`• ${products[i].name} x ${cart[i]} = ${sub}\n`;total+=sub;has=true}const customMboga=document.getElementById('customMboga').value.trim();if(customMboga){msg+=`• 🥬 CUSTOMER ANAOMBA: ${customMboga}\n`;has=true}if(!has){alert("Chagua mboga au andika mboga unayotaka!");return}const maeleo=document.getElementById('maeleo').value;const ramo=document.getElementById('ramo').value;const loc=document.getElementById('location').value;msg+=`\n*TOTAL: KES ${total}*\nJina: ${maeleo}\nSimu: ${ramo}\nLocation: ${loc}\n`;window.open(`https://wa.me/254790326587?text=${encodeURIComponent(msg)}`,'_blank');setTimeout(()=>{window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank');},800);cart={};document.getElementById('customMboga').value='';render()}
 render();
 let adminClicks=0,lastClick=0;document.getElementById('logo').addEventListener('click',()=>{const now=Date.now();if(now-lastClick>3000)adminClicks=0;lastClick=now;adminClicks++;if(adminClicks>=5){adminClicks=0;const pass=prompt("Ingiza Admin Password:");if(pass==="1234"){document.getElementById('adminPanel').style.display='block';renderAdmin()}}});
-function renderAdmin(){const l=document.getElementById('adminProductsList');l.innerHTML=products.map((p,i)=>`<div style="display:flex;gap:6px;margin-bottom:8px"><input value="${p.name}" onchange="editProd(${i},'name',this.value)" style="flex:1"><input type="number" value="${p.price}" onchange="editProd(${i},'price',this.value)" style="width:80px"><button onclick="delProd(${i})" style="background:red;color:white;border:none;padding:6px;border-radius:6px">X</button></div>`).join('')}
+function renderAdmin(){const l=document.getElementById('adminProductsList');l.innerHTML=products.map((p,i)=>`<div style="display:flex;gap:6px;margin-bottom:8px;align-items:center"><input value="${p.name}" onchange="editProd(${i},'name',this.value)" style="flex:1;margin:0"><input type="number" value="${p.price}" onchange="editProd(${i},'price',this.value)" style="width:80px;margin:0"><button onclick="delProd(${i})" style="background:red;color:white;border:none;padding:8px 10px;border-radius:6px">X</button></div>`).join('')}
 function editProd(i,k,v){if(k==='price')v=parseInt(v);products[i][k]=v;saveProducts();render()}
-function delProd(i){if(confirm('Futa?')){products.splice(i,1);saveProducts();render();renderAdmin()}}
-function addProduct(){const n=document.getElementById('newName').value;const pr=parseInt(document.getElementById('newPrice').value);if(!n||!pr){alert('Jaza');return}products.push({name:n,price:pr});saveProducts();render();renderAdmin();document.getElementById('newName').value='';document.getElementById('newPrice').value=''}
+function delProd(i){if(confirm('Futa '+products[i].name+'?')){products.splice(i,1);saveProducts();render();renderAdmin()}}
+function addProduct(){const n=document.getElementById('newName').value.trim();const pr=parseInt(document.getElementById('newPrice').value);if(!n||!pr){alert('Jaza jina na bei');return}products.push({name:n,price:pr});saveProducts();render();renderAdmin();document.getElementById('newName').value='';document.getElementById('newPrice').value=''}
 </script>
 </body>
 </html>
