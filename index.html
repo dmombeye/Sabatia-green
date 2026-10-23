@@ -13,15 +13,15 @@ body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:10px}
 .yellow{background:#fde68a;border:2px solid #f59e0b}
 .gray{background:#9ca3af;color:white}
 .product{background:white;border-radius:12px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-.product button{padding:6px 12px;border-radius:8px;border:none;font-weight:bold;cursor:pointer}
+.product button{padding:6px 12px;border-radius:8px;border:none;font-weight:bold}
 .add{background:#16a34a;color:white}
 .sub{background:#fee2e2}
-input{width:100%;padding:12px;border-radius:12px;border:2px solid #16a34a;box-sizing:border-box}
+input{width:100%;padding:12px;border-radius:12px;border:2px solid #16a34a;box-sizing:border-box;margin-top:5px}
 </style>
 </head>
 <body>
 
-<div class="header" id="logo">🥬 Sabatia Fresh Mboga</div>
+<div class="header">🥬 Sabatia Fresh Mboga</div>
 
 <div class="box">
 🚴 Delivery 20 KES | 💰 MPESA: 0790326587<br>
@@ -29,7 +29,6 @@ input{width:100%;padding:12px;border-radius:12px;border:2px solid #16a34a;box-si
 </div>
 
 <button class="btn blue" onclick="getLocation()">📍 ONYESHA RAMANI - WEKA PIN MAHALI ULIPO</button>
-
 <div id="mapInfo" class="box" style="display:none"></div>
 
 <div class="box" style="text-align:left">
@@ -40,100 +39,56 @@ input{width:100%;padding:12px;border-radius:12px;border:2px solid #16a34a;box-si
 <div id="products"></div>
 
 <div class="box yellow" style="font-weight:bold;font-size:18px" id="jumla">Jumla: 0 + 20 = 20 KES</div>
-
 <button class="btn gray" id="orderBtn">CHAGUA MBOGA KWANZA</button>
 
 <script>
-const products = const products = [
+const products = [
   { id:1, name:"🥚 Mayai (Tray 30)", price:600 },
   { id:2, name:"🥬 Spinach", price:30 },
   { id:3, name:"🥬 Sukuma Wiki", price:30 },
   { id:4, name:"🌿 Kunde", price:40 },
   { id:5, name:"🌿 Managu", price:50 },
-  { id:6, name:"🌿 Slender Leaf", price:40 },
+  { id:6, name:"🌿 Mitoo / Marejea", price:40 },
   { id:7, name:"🌿 Mrenda", price:40 }
 ];
 
 let cart = {};
 let locationLink = "";
-let adminClicks = 0;
 
 function render(){
   const div = document.getElementById('products');
   div.innerHTML = "";
   products.forEach(p=>{
     const qty = cart[p.id] || 0;
-    div.innerHTML += `
-      <div class="product">
-        <div><b>${p.name}</b><br>${p.price} KES</div>
-        <div>
-          <button class="sub" onclick="changeQty(${p.id},-1)">-</button>
-          <span style="margin:0 8px">${qty}</span>
-          <button class="add" onclick="changeQty(${p.id},1)">+</button>
-        </div>
-      </div>
-    `;
+    div.innerHTML += `<div class="product"><div><b>${p.name}</b><br>${p.price} KES</div><div><button class="sub" onclick="changeQty(${p.id},-1)">-</button><span style="margin:0 8px">${qty}</span><button class="add" onclick="changeQty(${p.id},1)">+</button></div></div>`;
   });
   updateTotal();
 }
-
-function changeQty(id, d){
-  cart[id] = (cart[id]||0)+d;
-  if(cart[id]<=0) delete cart[id];
-  render();
-}
-
+function changeQty(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; render(); }
 function updateTotal(){
-  let total = 0;
-  let has = false;
-  for(let id in cart){
-    const p = products.find(x=>x.id==id);
-    total += p.price * cart[id];
-    has = true;
-  }
-  const finalTotal = has ? total + 20 : 20;
-  const base = has ? total : 0;
-  document.getElementById('jumla').innerText = `Jumla: ${base} + 20 = ${finalTotal} KES`;
-  const btn = document.getElementById('orderBtn');
-  if(has){
-    btn.innerText = "TUMA ORDER KWA WHATSAPP";
-    btn.className = "btn blue";
-    btn.onclick = sendOrder;
-  }else{
-    btn.innerText = "CHAGUA MBOGA KWANZA";
-    btn.className = "btn gray";
-    btn.onclick = null;
-  }
+  let total=0; let has=false;
+  for(let id in cart){ const p=products.find(x=>x.id==id); total+=p.price*cart[id]; has=true; }
+  document.getElementById('jumla').innerText=`Jumla: ${has?total:0} + 20 = ${has?total+20:20} KES`;
+  const btn=document.getElementById('orderBtn');
+  if(has){ btn.innerText="TUMA ORDER KWA WHATSAPP"; btn.className="btn blue"; btn.onclick=sendOrder; }
+  else{ btn.innerText="CHAGUA MBOGA KWANZA"; btn.className="btn gray"; btn.onclick=null; }
 }
-
 function getLocation(){
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      locationLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-      document.getElementById('mapInfo').style.display="block";
-      document.getElementById('mapInfo').innerHTML = "✅ Mahali pako pamewekwa!<br><a href='"+locationLink+"' target='_blank'>Angalia Ramani</a>";
-    });
-  }else{ alert("Simu yako haiungi mkono GPS"); }
+  navigator.geolocation.getCurrentPosition(pos=>{
+    locationLink=`https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+    document.getElementById('mapInfo').style.display="block";
+    document.getElementById('mapInfo').innerHTML="✅ Mahali pako pamewekwa!<br><a href='"+locationLink+"' target='_blank'>Angalia Ramani</a>";
+  });
 }
-
 function sendOrder(){
-  let msg = "*SABATIA FRESH MBOGA - ORDER MPYA*%0A%0A";
-  for(let id in cart){
-    const p = products.find(x=>x.id==id);
-    msg += `${p.name} x ${cart[id]} = ${p.price*cart[id]} KES%0A`;
-  }
-  const maelezo = document.getElementById('maelezo').value;
-  if(locationLink) msg += `%0A📍 Ramani: ${locationLink}%0A`;
-  if(maelezo) msg += `🏠 Maelezo: ${maelezo}%0A`;
-  msg += `%0A${document.getElementById('jumla').innerText}`;
+  let msg="*SABATIA FRESH MBOGA - ORDER*%0A%0A";
+  for(let id in cart){ const p=products.find(x=>x.id==id); msg+=`${p.name} x ${cart[id]} = ${p.price*cart[id]} KES%0A`; }
+  const maelezo=document.getElementById('maelezo').value;
+  if(locationLink) msg+=`%0A📍 Ramani: ${locationLink}%0A`;
+  if(maelezo) msg+=`🏠 Maelezo: ${maelezo}%0A`;
+  msg+=`%0A${document.getElementById('jumla').innerText}`;
   window.open(`https://wa.me/254790326587?text=${msg}`,'_blank');
 }
-
-document.getElementById('logo').addEventListener('click',()=>{
-  adminClicks++;
-  if(adminClicks>=5){ alert("Admin Mode - Hapa ndio utaona orders"); adminClicks=0; }
-});
-
 render();
 </script>
 </body>
