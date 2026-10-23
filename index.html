@@ -21,8 +21,7 @@ input{width:100%;padding:12px;border-radius:12px;border:2px solid #16a34a;box-si
 </head>
 <body>
 
-<div class="header">🥬 Sabatia Fresh Mboga</div>
-
+<div class="header" id="logo" style="cursor:pointer">🥬 Sabatia Fresh Mboga</div>
 <div class="box">
 🚴 Delivery 20 KES | 💰 MPESA: 0790326587<br>
 📦 Order inaenda kwa wote wawili - Bonyeza kichwa mara 5 Admin
@@ -90,6 +89,26 @@ function sendOrder(){
   window.open(`https://wa.me/254790326587?text=${msg}`,'_blank');
 }
 render();
+
+// ADMIN - Bonyeza kichwa mara 5
+let adminClicks = 0;
+let lastClick = 0;
+document.getElementById('logo').addEventListener('click', ()=>{
+  const now = Date.now();
+  if(now - lastClick > 3000) adminClicks = 0;
+  lastClick = now;
+  adminClicks++;
+  if(adminClicks >= 5){
+    adminClicks = 0;
+    const pass = prompt("Ingiza Admin Password:");
+    if(pass === "9032"){
+      alert("✅ Admin Mode ON");
+      window.location.href = "#admin";
+    }else if(pass !== null){
+      alert("❌ Password sio sahihi!");
+    }
+  }
+});
 </script>
 </body>
 </html>
