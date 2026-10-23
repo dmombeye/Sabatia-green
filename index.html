@@ -86,7 +86,10 @@ function sendOrder(){
   if(locationLink) msg+=`%0A📍 Ramani: ${locationLink}%0A`;
   if(maelezo) msg+=`🏠 Maelezo: ${maelezo}%0A`;
   msg+=`%0A${document.getElementById('jumla').innerText}`;
-  window.open(`https://wa.me/254790326587?text=${msg}`,'_blank');
+  window.open(`https://wa.me/254790326587?text=${encodeURIComponent(msg)}`,'_blank');
+setTimeout(()=>{
+window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank');
+},800);
 }
 render();
 
