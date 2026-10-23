@@ -1,117 +1,64 @@
 <!DOCTYPE html>
 <html lang="sw">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sabatia Fresh Mboga</title>
 <style>
-body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:10px}
-.header{text-align:center;color:#166534;font-weight:bold;font-size:22px;padding:10px}
-.box{border:2px solid #16a34a;border-radius:12px;padding:10px;background:white;margin:8px 0;text-align:center;font-size:14px}
-.btn{width:100%;padding:12px;border:none;border-radius:12px;font-weight:bold;margin:6px 0;cursor:pointer}
-.blue{background:#0ea5e9;color:white}
-.yellow{background:#fde68a;border:2px solid #f59e0b}
-.gray{background:#9ca3af;color:white}
-.product{background:white;border-radius:12px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-.product button{padding:6px 12px;border-radius:8px;border:none;font-weight:bold}
-.add{background:#16a34a;color:white}
-.sub{background:#fee2e2}
-input{width:100%;padding:12px;border-radius:12px;border:2px solid #16a34a;box-sizing:border-box;margin-top:5px}
+*{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#f6fdf6}
+.header{background:#2e7d32;color:white;padding:16px;text-align:center;font-weight:800;position:sticky;top:0;z-index:10}
+.sub{font-size:11px;font-weight:400;opacity:.9;margin-top:3px}
+.wrap{padding:12px;max-width:600px;margin:auto}
+.card{background:white;border-radius:14px;padding:12px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.prod{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eee}
+.btn{background:#2e7d32;color:white;border:none;padding:8px 12px;border-radius:8px;font-weight:700}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
+.orderBtn{background:#2e7d32;color:white;width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px}
+#adminPanel{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:9999;padding:15px;overflow:auto}
 </style>
 </head>
 <body>
-
-<div class="header" id="logo" style="cursor:pointer">🥬 Sabatia Fresh Mboga</div>
-<div class="box">
-🚴 Delivery 20 KES | 💰 MPESA: 0790326587<br>
-📦 Order inaenda kwa wote wawili - Bonyeza kichwa mara 5 Admin
+<div class="header" id="logo" style="cursor:pointer">🥬 Sabatia Fresh Mboga
+<div class="sub">Order inaenda kwa wote wawili - Bonyeza kichwa mara 5 Admin</div>
 </div>
 
-<button class="btn blue" onclick="getLocation()">📍 ONYESHA RAMANI - WEKA PIN MAHALI ULIPO</button>
-<div id="mapInfo" class="box" style="display:none"></div>
-
-<div class="box" style="text-align:left">
-🏠 Maelezo: e.g Nyumba ya blue, kwa chief...
-<input type="text" id="maelezo" placeholder="Andika maelezo yako hapa...">
+<div class="wrap">
+<div class="card"><h3>🛒 Mboga</h3><div id="products"></div></div>
+<div class="card">
+<h3>📍 Maelezo</h3>
+<input id="maeleo" placeholder="Jina lako">
+<input id="ramo" placeholder="Namba yako">
+<select id="location"><option value="">Chagua Location</option><option>Sabatia</option><option>Mbale</option><option>Chavakali</option><option>Mudete</option><option>Luanda</option></select>
+<div style="margin-top:8px"><b>Total: KES <span id="total">0</span></b></div>
+<button class="orderBtn" onclick="sendOrder()">Tuma Order 📲</button>
+<p style="font-size:11px;text-align:center;color:#666">Inatuma kwa 0790326587 na 0111810602</p>
+</div>
 </div>
 
-<div id="products"></div>
-
-<div class="box yellow" style="font-weight:bold;font-size:18px" id="jumla">Jumla: 0 + 20 = 20 KES</div>
-<button class="btn gray" id="orderBtn">CHAGUA MBOGA KWANZA</button>
+<div id="adminPanel">
+<h2>🛠️ Admin Panel</h2>
+<div id="adminProductsList"></div>
+<hr>
+<h4>Ongeza Mboga</h4>
+<input id="newName" placeholder="Jina"><input id="newPrice" type="number" placeholder="Bei">
+<button onclick="addProduct()" style="margin-top:8px;background:#2e7d32;color:white;padding:10px;border:none;border-radius:8px;width:100%">Ongeza</button>
+<br><br>
+<button onclick="document.getElementById('adminPanel').style.display='none'" style="background:red;color:white;padding:12px;border:none;border-radius:8px;width:100%">Funga ❌</button>
+</div>
 
 <script>
-const products = [
-  { id:1, name:"🥚 Mayai (Tray 30)", price:600 },
-  { id:2, name:"🥬 Spinach", price:30 },
-  { id:3, name:"🥬 Sukuma Wiki", price:30 },
-  { id:4, name:"🌿 Kunde", price:40 },
-  { id:5, name:"🌿 Managu", price:50 },
-  { id:6, name:"🌿 Mitoo / Marejea", price:40 },
-  { id:7, name:"🌿 Mrenda", price:40 }
-];
-
-let cart = {};
-let locationLink = "";
-
-function render(){
-  const div = document.getElementById('products');
-  div.innerHTML = "";
-  products.forEach(p=>{
-    const qty = cart[p.id] || 0;
-    div.innerHTML += `<div class="product"><div><b>${p.name}</b><br>${p.price} KES</div><div><button class="sub" onclick="changeQty(${p.id},-1)">-</button><span style="margin:0 8px">${qty}</span><button class="add" onclick="changeQty(${p.id},1)">+</button></div></div>`;
-  });
-  updateTotal();
-}
-function changeQty(id,d){ cart[id]=(cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; render(); }
-function updateTotal(){
-  let total=0; let has=false;
-  for(let id in cart){ const p=products.find(x=>x.id==id); total+=p.price*cart[id]; has=true; }
-  document.getElementById('jumla').innerText=`Jumla: ${has?total:0} + 20 = ${has?total+20:20} KES`;
-  const btn=document.getElementById('orderBtn');
-  if(has){ btn.innerText="TUMA ORDER KWA WHATSAPP"; btn.className="btn blue"; btn.onclick=sendOrder; }
-  else{ btn.innerText="CHAGUA MBOGA KWANZA"; btn.className="btn gray"; btn.onclick=null; }
-}
-function getLocation(){
-  navigator.geolocation.getCurrentPosition(pos=>{
-    locationLink=`https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-    document.getElementById('mapInfo').style.display="block";
-    document.getElementById('mapInfo').innerHTML="✅ Mahali pako pamewekwa!<br><a href='"+locationLink+"' target='_blank'>Angalia Ramani</a>";
-  });
-}
-function sendOrder(){
-  let msg="*SABATIA FRESH MBOGA - ORDER*%0A%0A";
-  for(let id in cart){ const p=products.find(x=>x.id==id); msg+=`${p.name} x ${cart[id]} = ${p.price*cart[id]} KES%0A`; }
-  const maelezo=document.getElementById('maelezo').value;
-  if(locationLink) msg+=`%0A📍 Ramani: ${locationLink}%0A`;
-  if(maelezo) msg+=`🏠 Maelezo: ${maelezo}%0A`;
-  msg+=`%0A${document.getElementById('jumla').innerText}`;
-  window.open(`https://wa.me/254790326587?text=${encodeURIComponent(msg)}`,'_blank');
-setTimeout(()=>{
-window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank');
-},800);
-}
+let products=JSON.parse(localStorage.getItem('sabatia_products'))||[{name:"Sukuma",price:20},{name:"Spinach",price:30},{name:"Kunde",price:30},{name:"Cabbage",price:40},{name:"Nyanya",price:30},{name:"Kitunguu",price:30}];
+let cart={};
+function saveProducts(){localStorage.setItem('sabatia_products',JSON.stringify(products))}
+function render(){const d=document.getElementById('products');d.innerHTML=products.map((p,i)=>`<div class="prod"><div><b>${p.name}</b><br><small>KES ${p.price}</small></div><div style="display:flex;gap:6px;align-items:center"><button onclick="changeQty(${i},-1)" style="width:30px;height:30px;border-radius:50%;border:1px solid #ddd">-</button><span id="q-${i}">${cart[i]||0}</span><button onclick="changeQty(${i},1)" class="btn">+</button></div></div>`).join('');updateTotal()}
+function changeQty(i,d){cart[i]=(cart[i]||0)+d;if(cart[i]<=0)delete cart[i];document.getElementById(`q-${i}`).innerText=cart[i]||0;updateTotal()}
+function updateTotal(){let t=0;for(let i in cart){t+=cart[i]*products[i].price}document.getElementById('total').innerText=t}
+function sendOrder(){let msg="*SABATIA ORDER:*\n\n";let total=0,has=false;for(let i in cart){msg+=`• ${products[i].name} x ${cart[i]} = ${products[i].price*cart[i]}\n`;total+=products[i].price*cart[i];has=true}if(!has){alert("Chagua mboga!");return}const maeleo=document.getElementById('maeleo').value;const ramo=document.getElementById('ramo').value;const loc=document.getElementById('location').value;msg+=`\nTOTAL: KES ${total}\nJina: ${maeleo}\nSimu: ${ramo}\nLocation: ${loc}\n`;window.open(`https://wa.me/254790326587?text=${encodeURIComponent(msg)}`,'_blank');setTimeout(()=>{window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank');},800);cart={};render()}
 render();
-
-// ADMIN - Bonyeza kichwa mara 5
-let adminClicks = 0;
-let lastClick = 0;
-document.getElementById('logo').addEventListener('click', ()=>{
-  const now = Date.now();
-  if(now - lastClick > 3000) adminClicks = 0;
-  lastClick = now;
-  adminClicks++;
-  if(adminClicks >= 5){
-    adminClicks = 0;
-    const pass = prompt("Ingiza Admin Password:");
-    if(pass === "9032"){
-      alert("✅ Admin Mode ON");
-      window.location.href = "#admin";
-    }else if(pass !== null){
-      alert("❌ Password sio sahihi!");
-    }
-  }
-});
+let adminClicks=0,lastClick=0;document.getElementById('logo').addEventListener('click',()=>{const now=Date.now();if(now-lastClick>3000)adminClicks=0;lastClick=now;adminClicks++;if(adminClicks>=5){adminClicks=0;const pass=prompt("Ingiza Admin Password:");if(pass==="1234"){document.getElementById('adminPanel').style.display='block';renderAdmin()}}});
+function renderAdmin(){const l=document.getElementById('adminProductsList');l.innerHTML=products.map((p,i)=>`<div style="display:flex;gap:6px;margin-bottom:8px"><input value="${p.name}" onchange="editProd(${i},'name',this.value)" style="flex:1"><input type="number" value="${p.price}" onchange="editProd(${i},'price',this.value)" style="width:80px"><button onclick="delProd(${i})" style="background:red;color:white;border:none;padding:6px;border-radius:6px">X</button></div>`).join('')}
+function editProd(i,k,v){if(k==='price')v=parseInt(v);products[i][k]=v;saveProducts();render()}
+function delProd(i){if(confirm('Futa?')){products.splice(i,1);saveProducts();render();renderAdmin()}}
+function addProduct(){const n=document.getElementById('newName').value;const pr=parseInt(document.getElementById('newPrice').value);if(!n||!pr){alert('Jaza');return}products.push({name:n,price:pr});saveProducts();render();renderAdmin();document.getElementById('newName').value='';document.getElementById('newPrice').value=''}
 </script>
 </body>
 </html>
