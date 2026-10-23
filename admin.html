@@ -6,58 +6,84 @@
 <title>Admin - Sabatia Fresh</title>
 <style>
 body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:15px}
-.card{background:white;border-radius:12px;padding:20px;max-width:400px;margin:30px auto;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-input{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;margin:8px 0}
-button{width:100%;padding:12px;border-radius:8px;border:none;font-weight:bold;cursor:pointer}
-.btn-green{background:#16a34a;color:white}
-.btn-blue{background:#2563eb;color:white;margin-top:10px}
-.box{margin-top:15px;background:#fef3c7;padding:10px;border-radius:8px}
+.card{background:white;border-radius:12px;padding:16px;margin:10px auto;max-width:650px;box-shadow:0 2px 6px rgba(0,0,0,0.1)}
+input,select{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;margin:6px 0}
+button{padding:10px 14px;border-radius:8px;border:none;font-weight:bold;cursor:pointer}
+.btn-green{background:#16a34a;color:white;width:100%}
+.btn-blue{background:#2563eb;color:white}
+.small{font-size:13px;color:#555}
+.status-Delivered{color:green;font-weight:bold}
+.status-Failed{color:red;font-weight:bold}
+.status-Pending{color:orange}
 </style>
 </head>
 <body>
-<div id="loginBox" class="card">
+
+<div id="loginBox" class="card" style="max-width:400px;margin-top:50px">
 <h2 style="text-align:center;color:#166534">🔐 Admin Login</h2>
-<input id="user" placeholder="Username (sabatia)">
-<input id="pass" type="password" placeholder="Password (1234)">
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
 <button class="btn-green" onclick="login()">INGIA</button>
 <p id="msg" style="color:red;text-align:center"></p>
-<button class="btn-blue" onclick="window.location.href='index.html'">⬅️ Rudi Home</button>
+<p class="small" style="text-align:center">Default: sabatia / 1234</p>
+<button class="btn-blue" style="width:100%;margin-top:10px" onclick="location.href='index.html'">⬅️ Rudi Home</button>
 </div>
 
-<div id="adminPanel" class="card" style="display:none;max-width:600px">
-<h2>✅ Admin Mode ON</h2>
-<p>Karibu Dennis!</p>
-<div class="box">
-<b>Orders zitakuja hapa (baada ya ku-link na Google Sheet)</b><br><br>
-- Utaona Order Number<br>
-- Location ya client<br>
-- Kila product: Delivered / Failed<br>
-- Jumla
+<div id="panel" style="display:none">
+<div class="card">
+<h2>✅ Admin Panel - Sabatia Fresh</h2>
+<p>Karibu Dennis! Hapa utaona orders zote.</p>
+<button class="btn-blue" onclick="location.href='index.html'">Shop</button>
+<button style="background:#ef4444;color:white" onclick="logout()">Logout</button>
 </div>
-<button class="btn-blue" onclick="window.location.href='index.html'">Rudi kwenye Shop</button>
-<button class="btn-green" style="margin-top:10px" onclick="logout()">Logout</button>
+<div id="orders">Inapakia orders...</div>
 </div>
 
 <script>
+const SHEET_URL = ""; // << WEKA LINK YAKO YA APPS SCRIPT HAPA BAADAYE
+
 function login(){
-  const u=document.getElementById('user').value.trim();
-  const p=document.getElementById('pass').value.trim();
-  if(u==="sabatia" && p==="1234"){
-    localStorage.setItem("isAdmin","true");
-    document.getElementById('loginBox').style.display="none";
-    document.getElementById('adminPanel').style.display="block";
-  } else {
-    document.getElementById('msg').innerText="❌ Username au password sio sahihi. Jaribu sabatia / 1234";
-  }
+ const u=document.getElementById('user').value.trim();
+ const p=document.getElementById('pass').value.trim();
+ if(u==="sabatia" && p==="1234" || u==="Dennis" && p==="1234"){
+   localStorage.setItem("isAdmin","true");
+   showPanel();
+ } else {
+   document.getElementById('msg').innerText="❌ Sio sahihi. Tumia sabatia / 1234 au Dennis / 1234";
+ }
 }
-function logout(){
-  localStorage.removeItem("isAdmin");
-  window.location.href="index.html";
+function showPanel(){
+ document.getElementById('loginBox').style.display="none";
+ document.getElementById('panel').style.display="block";
+ if(SHEET_URL){ loadOrders(); } else {
+   document.getElementById('orders').innerHTML='<div class="card">Sheet bado haija-link. Orders za sasa zinakuja WhatsApp tu. Ukiweka Link ya Google Sheet hapa ndani ya code, orders zitaonekana hapa na uta-mark Delivered/Failed.</div>';
+ }
 }
-// Kama alishalogin tayari
-if(localStorage.getItem("isAdmin")==="true"){
-  document.getElementById('loginBox').style.display="none";
-  document.getElementById('adminPanel').style.display="block";
+function logout(){ localStorage.removeItem("isAdmin"); location.reload(); }
+if(localStorage.getItem("isAdmin")==="true"){ showPanel(); }
+
+function loadOrders(){
+ fetch(SHEET_URL).then(r=>r.json()).then(rows=>{
+   let html="";
+   rows.slice(1).reverse().forEach((r,i)=>{
+     const rowNum = rows.length - i;
+     const overall = r[15] || "Pending";
+     html+=`<div class="card">
+     <b>${r[0]} | ${r[2]} | ${r[1]}</b><br>
+     <span class="small">📍 ${r[4]}</span><br>
+     <b>${r[5]}</b> ${r[6]?'<br>Mboga: '+r[6]:''}<br>
+     Total: KES ${r[7]}<br><br>
+     Sukuma: <select onchange="updateStatus(${rowNum},10,this.value)"><option>${r[9]}</option><option>Delivered</option><option>Failed</option></select>
+     Spinach: <select onchange="updateStatus(${rowNum},9,this.value)"><option>${r[8]}</option><option>Delivered</option><option>Failed</option></select>
+     Kunde: <select onchange="updateStatus(${rowNum},11,this.value)"><option>${r[10]}</option><option>Delivered</option><option>Failed</option></select>
+     <br><b class="status-${overall}">Overall: ${overall}</b>
+     </div>`;
+   });
+   document.getElementById('orders').innerHTML = html || '<div class="card">Hakuna orders bado</div>';
+ });
+}
+function updateStatus(row,col,status){
+ fetch(SHEET_URL,{method:"POST", body: JSON.stringify({action:"updateStatus", row, col, status})}).then(()=>{ alert("Status updated: "+status); loadOrders(); });
 }
 </script>
 </body>
