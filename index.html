@@ -1,51 +1,54 @@
 <!DOCTYPE html>
-<html lang="sw">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sabatia Fresh Mboga</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-body{background:#f0fdf4;margin:0;padding:10px;font-family:sans-serif}
-.header{text-align:center;padding:10px}
-.logo{cursor:pointer;font-size:22px;font-weight:bold;color:#166534}
-.box{background:white;border-radius:12px;padding:12px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-.product{display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid #eee}
-.btn-green{background:#22c55e;color:white;border:none;padding:6px 12px;border-radius:8px;font-weight:bold}
-.btn-gray{background:#e5e7eb;color:black;border:none;padding:6px 12px;border-radius:8px}
-.btn-blue{background:#2563eb;color:white;border:none;padding:12px;border-radius:10px;width:100%;font-weight:bold;margin:6px 0}
-.btn-yellow{background:#fde68a;padding:12px;border-radius:10px;text-align:center;font-weight:bold}
-#map{height:250px;border-radius:10px;display:none;margin-top:10px}
-input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:8px;margin:5px 0;box-sizing:border-box}
-</style>
-</head>
+<html>
+<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sabatia Greens</title></head>
 <body>
-<div class="header">
-<div class="logo" onclick="adminCheck()">🌿 Sabatia Fresh Mboga</div>
-<div style="font-size:12px">🚚 Delivery 20 KES! • MPESA: 0790365587<br>📦 Order inaenda kwa WhatsApp - Bonyeza kichwa mara 5 Admin</div>
-</div>
-<button class="btn-blue" onclick="getLocation()">📍 ONYESHA RAMANI - WEKA PIN MAHALI ULIPO</button>
-<div id="mapInfo" style="font-size:13px;color:green;text-align:center;margin:5px"></div>
-<div id="map"></div>
-<div class="box"><label>👤 Maelezo: e.g Nyumba ya blue, kwa chief....</label><input type="text" id="maelezo" placeholder="Andika maelezo yako hapa..."></div>
-<div class="box" id="products"></div>
-<div class="box" style="border:1px dashed #22c55e"><label>➕ Mboga haiko kwa list?</label><input type="text" id="customMboga" placeholder="Andika hapa: Terere, Nyanya, Kitunguu..."></div>
-<div class="box btn-yellow" id="jumla">Jumla: 0 + 20 = 20 KES</div>
-<button class="btn-blue" id="orderBtn" onclick="sendOrder()">CHAGUA MBOGA KWANZA</button>
+<h2>Sabatia Greens - 780 KES</h2>
+<input id="client" placeholder="Jina"><br><br>
+<input id="phone" placeholder="Phone"><br><br>
+<button id="orderBtn">ORDER SASA</button>
 <script>
-const AIRTABLE_TOKEN = "patZl3EzfBiQzpgay.82e56dc880c81734a7a0863352030eb4b8cd0398ca365b369df157ad50702212";
-const BASE_ID = "appr6dhzTBVcG72LT";
-const TABLE_ID = "tbl2qLiyi1pb0CXv4";
-const products = [{id:1,name:"Mayai (Tray 30)",price:600},{id:2,name:"Spinach",price:30},{id:3,name:"Sukuma Wiki",price:30},{id:4,name:"Kunde",price:40},{id:5,name:"Managu",price:50},{id:6,name:"Mitoo / Marejea",price:40},{id:7,name:"Mrenda",price:40}];
-let cart={},locationLink="",latitude="",longitude="",locationName="",map,marker,adminClicks=0;
-function render(){let div=document.getElementById('products');div.innerHTML="";products.forEach(p=>{let qty=cart[p.id]||0;div.innerHTML+='<div class="product"><div><b>'+p.name+'</b><br><small>'+p.price+' KES</small></div><div><button class="btn-gray" onclick="deleteCart('+p.id+')">🗑️</button><button class="btn-gray" onclick="sub('+p.id+')">-</button><span> '+qty+' </span><button class="btn-green" onclick="add('+p.id+')">+</button></div></div>';});updateTotal();}
-function add(id){cart[id]=(cart[id]||0)+1;render();}function sub(id){if(cart[id]){cart[id]--;if(cart[id]<=0)delete cart[id];render();}}function deleteCart(id){delete cart[id];render();}
-function updateTotal(){let total=0,has=false,totalQty=0;for(let id in cart){let p=products.find(x=>x.id==id);total+=p.price*cart[id];totalQty+=cart[id];has=true;}document.getElementById('jumla').innerHTML='Jumla: '+total+' + 20 = '+(total+20)+' KES';document.getElementById('orderBtn').innerText=has?'CHAGUA MBOGA - TUMA ORDER ('+(total+20)+' KES)':'CHAGUA MBOGA KWANZA';return{total,totalQty,has};}
-function getLocation(){if(!navigator.geolocation){alert('Simu yako haikubali location');return;}document.getElementById('mapInfo').innerText='Inatafuta mahali ulipo...';navigator.geolocation.getCurrentPosition(pos=>{latitude=pos.coords.latitude;longitude=pos.coords.longitude;locationLink='https://www.google.com/maps?q='+latitude+','+longitude;locationName='Lat '+latitude.toFixed(5)+', Lng '+longitude.toFixed(5);document.getElementById('mapInfo').innerHTML='✅ Mahali pamewekwa: <a href="'+locationLink+'" target="_blank">'+locationName+'</a>';document.getElementById('map').style.display='block';if(!map){map=L.map('map').setView([latitude,longitude],15);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);}else{map.setView([latitude,longitude],15);}if(marker)map.removeLayer(marker);marker=L.marker([latitude,longitude],{draggable:true}).addTo(map).bindPopup('Wewe hapa - buruta pin').openPopup();marker.on('dragend',function(e){let pos=e.target.getLatLng();latitude=pos.lat;longitude=pos.lng;locationLink='https://www.google.com/maps?q='+latitude+','+longitude;});},err=>{alert('Imeshindwa: '+err.message);});}
-async function sendOrder(){const o=updateTotal();const total=o.total,totalQty=o.totalQty,has=o.has;const customMboga=document.getElementById('customMboga').value.trim();const maelezo=document.getElementById('maelezo').value.trim();if(!has&&!customMboga){alert('Chagua mboga');return;}if(!latitude){alert('Bonyeza ONYESHA RAMANI kwanza');getLocation();return;}let productList='';for(let id in cart){let p=products.find(x=>x.id==id);productList+=p.name+' x '+cart[id]+' = '+(p.price*cart[id])+' KES\n';}if(customMboga)productList+='Custom: '+customMboga+'\n';let msg='SABATIA FRESH MBOGA - ORDER MPYA\n\n'+productList+'\nJumla: '+total+' + 20 = '+(total+20)+' KES\n\nMaelezo: '+maelezo+'\nMboga ya ziada: '+customMboga+'\n\nMahali: '+locationLink+'\nLat: '+latitude+', Lng: '+longitude+'\n\nAsante!';window.open('https://wa.me/254790365587?text='+encodeURIComponent(msg),'_blank');try{document.getElementById('orderBtn').innerText='Inatuma Airtable...';const r=await fetch('https://api.airtable.com/v0/'+BASE_ID+'/'+TABLE_ID,{method:'POST',headers:{'Authorization':'Bearer '+AIRTABLE_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({fields:{'Client Name':maelezo||'Mteja WhatsApp','Phone Number':'0790365587 Order','Product Name':productList.substring(0,1000),'Quantity':totalQty||1,'Price':total+20,'Location Name':locationName+' - '+maelezo,'Latitude':parseFloat(latitude),'Longitude':parseFloat(longitude),'Order Status':'Pending','Order Date':new Date().toISOString(),'Notes':'Custom: '+customMboga+' | '+maelezo+' | '+locationLink}})});console.log(await r.json());document.getElementById('orderBtn').innerText='✅ ORDER IMETUMWA!';}catch(e){alert('WhatsApp imetumwa, Airtable error: '+e.message);}}
-function adminCheck(){adminClicks++;if(adminClicks>=5){let pass=prompt('Ingiza Admin Password:');if(pass==='1234'){location.href='admin.html';}else if(pass!==null){alert('Password si sahihi');}adminClicks=0;}}
-render();
+const BASE_ID="appr6dhzTBVcG72LT";
+const TABLE_ID="tblYhkWRGvILFlaps";
+const TOKEN="patYAKO_HAPA"; // Weka token yako hapa
+
+document.getElementById('orderBtn').onclick=()=>{
+  const client=document.getElementById('client').value;
+  const phone=document.getElementById('phone').value;
+  if(!client||!phone){alert("Jaza jina na phone");return;}
+
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
+    const mapLink=`https://www.google.com/maps?q=${lat},${lng}`;
+    
+    // 1. SAVE AIRTABLE
+    await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`,{
+      method:"POST",
+      headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},
+      body:JSON.stringify({fields:{
+        "Client name":client,
+        "Phone number":phone,
+        "Price":780,
+        "Location link":mapLink,
+        "Latitude":lat,
+        "Longitude":lng,
+        "Order date":new Date().toISOString().split('T')[0],
+        "Order status":"Pending",
+        "Order details":`780 KES - ${client}`
+      }})
+    });
+
+    // 2. WHATSAPP KWA WOTE WAWILI MARA MOJA
+    const msg=`*SABATIA ORDER MPYA*%0A%0AClient: ${client}%0APhone: ${phone}%0APrice: 780 KES%0ALocation: ${mapLink}%0A%0ALat: ${lat} Lng: ${lng}`;
+    const n1="254790326587";
+    const n2="254111810602";
+    
+    window.open(`https://wa.me/${n1}?text=${msg}`,"_blank");
+    setTimeout(()=>{ window.open(`https://wa.me/${n2}?text=${msg}`,"_blank"); }, 800);
+    
+    alert("Order imetumwa kwa Admin wote wawili!");
+  },()=>{alert("Ruhusu Location kwanza");});
+}
 </script>
 </body>
 </html>
