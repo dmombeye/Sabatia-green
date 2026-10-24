@@ -5,209 +5,58 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sabatia Fresh Mboga</title>
 <style>
-body{background:#e8f5e9;margin:0;font-family:system-ui;padding:0 0 100px 0}
-.header{background:#fff;margin:10px;padding:10px;border-radius:12px;text-align:center;box-shadow:0 2px 5px #0001}
-.blue-btn{background:#1976d2;color:#fff;border:none;width:90%;margin:10px 5%;padding:12px;border-radius:10px;font-weight:bold;font-size:15px}
-.card{background:#fff;margin:8px 10px;padding:10px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px #0001}
-.qty{display:flex;align-items:center;gap:6px}
-.qty button{width:32px;height:32px;border-radius:50%;border:none;background:#2e7d32;color:#fff;font-size:18px;font-weight:bold}
-.qty span{min-width:18px;text-align:center}
-.maelezo{margin:10px;background:#fff;padding:10px;border-radius:12px}
-.maelezo textarea{width:100%;border:none;outline:none;background:#f9f9f9;padding:8px;border-radius:8px;box-sizing:border-box}
-.jumla{background:#fff9c4;margin:10px;padding:12px;border-radius:12px;text-align:center;font-weight:bold;border:1px solid #f0e68c}
-.order-btn{position:fixed;bottom:0;left:0;right:0;background:#9e9e9e;color:#fff;border:none;padding:16px;font-size:16px;font-weight:bold}
+body{background:#e8f5e9;margin:0;font-family:system-ui;padding:0 0 110px 0}
+.header{background:#fff;margin:10px;padding:12px;border-radius:12px;text-align:center;box-shadow:0 2px 5px #0001;cursor:pointer}
+.blue-btn{background:#1976d2;color:#fff;border:none;width:90%;margin:10px 5%;padding:13px;border-radius:10px;font-weight:bold;font-size:15px}
+.card{background:#fff;margin:8px 10px;padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px #0001}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{width:34px;height:34px;border-radius:50%;border:none;background:#2e7d32;color:#fff;font-size:20px;font-weight:bold}
+.qty span{min-width:20px;text-align:center;font-weight:bold}
+.maelezo{margin:10px;background:#fff;padding:12px;border-radius:12px}
+.maelezo textarea,input{width:100%;border:1px solid #ddd;outline:none;background:#f9f9f9;padding:10px;border-radius:8px;box-sizing:border-box;margin-top:6px}
+.jumla{background:#fff9c4;margin:10px;padding:14px;border-radius:12px;text-align:center;font-weight:bold;border:1px solid #f0e68c;font-size:16px}
+.order-btn{position:fixed;bottom:0;left:0;right:0;background:#9e9e9e;color:#fff;border:none;padding:18px;font-size:17px;font-weight:bold;z-index:10}
 .order-btn.active{background:#2e7d32}
-.admin-panel{display:none}
 </style>
 </head>
 <body>
-
-<div class="header" id="headerTap">
-<b>🥬 Sabatia Fresh Mboga</b><br>
-<small>📦 Delivery 20 KES | MPESA: 0790326587<br>📩 Order inaenda kwa wote wawili - Bonyeeza kichwa mara 5 Admin</small>
-</div>
-
+<div class="header" id="headerTap"><b>🥬 Sabatia Fresh Mboga</b><br><small>📦 Delivery 20 KES | MPESA: 0790326587<br>📩 Order inaenda kwa wote wawili - Bonyeeza kichwa mara 5 Admin</small></div>
 <button class="blue-btn" id="ramaniBtn">📍 ONYESHA RAMANI - WEKA PIN MAHALI ULIPO</button>
-
-<div class="maelezo">
-<label>👤 Maelezo: e.g Nyumba ya blue, kwa chief...</label>
-<textarea id="maelezo" placeholder="Andika maelezo yako hapa..."></textarea>
-<input id="jina" placeholder="Jina lako" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box">
-<input id="phone" placeholder="Phone 07..." style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box">
-</div>
-
+<div class="maelezo"><label>👤 Maelezo: e.g Nyumba ya blue, kwa chief...</label><textarea id="maelezo" placeholder="Andika maelezo yako hapa..."></textarea><input id="jina" placeholder="Jina lako"><input id="phone" placeholder="Phone 07..."></div>
 <div id="products"></div>
-
-<div class="maelezo" style="border:1px dashed #2e7d32">
-<label>➕ Mboga haipo kwa list?</label>
-<textarea id="customMboga" placeholder="Andika hapa: Terere, Nyanya, Kitungu..."></textarea>
-</div>
-
+<div class="maelezo" style="border:1px dashed #2e7d32"><label>➕ Mboga haipo kwa list?</label><textarea id="customMboga" placeholder="Andika hapa: Terere, Nyanya, Kitungu..."></textarea></div>
 <div class="jumla" id="jumla">Jumla: 0 + 20 = 20 KES</div>
-
 <button class="order-btn" id="orderBtn">CHAGUA MBOGA KWANZA</button>
-
-<!-- ADMIN -->
-<div id="adminPanel" class="admin-panel" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#e8f5e9;z-index:100;padding:15px;overflow:auto">
-<div style="background:white;padding:15px;border-radius:12px">
-<b>✅ Admin Panel - Sabatia Fresh</b><br>
-<span id="adminMsg">Karibu Dennis! Hapa utaona orders zote.</span><br><br>
-<button onclick="showShop()" style="background:#1976d2;color:white;padding:8px 12px;border:none;border-radius:6px">Shop</button>
-<button onclick="logout()" style="background:#c62828;color:white;padding:8px 12px;border:none;border-radius:6px">Logout</button>
+<div id="adminPanel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#e8f5e9;z-index:100;padding:15px;overflow:auto">
+<div style="background:white;padding:15px;border-radius:12px"><b>✅ Admin Panel - Sabatia Fresh</b><br><small>Utaona Delivered / Pending hapa</small><br><br><button onclick="showShop()" style="background:#1976d2;color:white;padding:8px 12px;border:none;border-radius:6px">Shop</button> <button onclick="logout()" style="background:#c62828;color:white;padding:8px 12px;border:none;border-radius:6px">Logout</button></div>
+<div id="adminList" style="margin-top:15px">Loading...</div>
 </div>
-<div id="adminList" style="margin-top:15px">Loading Airtable...</div>
-</div>
-
 <script>
 const BASE_ID="appr6dhzTBVcG72LT";
 const TABLE_ID="tblYhkWRGvILFlaps";
-const TOKEN="patYAKO_HAPA"; // WEKA TOKEN YAKO HAPA
-
-const PRODUCTS=[
- {id:"mayai",name:"Mayai (Tray 30)",price:600},
- {id:"spinach",name:"Spinach",price:30},
- {id:"sukuma",name:"Sukuma Wiki",price:30},
- {id:"kunde",name:"Kunde",price:40},
- {id:"managu",name:"Managu",price:50},
- {id:"mitoo",name:"Mitoo / Marejea",price:40},
- {id:"mrenda",name:"Mrenda",price:40},
-];
-
-let cart={};
-let myLat=null, myLng=null, myLink="";
-
+const TOKEN="patZl3EzfBiQzpgay.074ca2e680235aa9158f05ff7a4e7314dd087b141da42ff0afe2d2b342e6d045";
+const PRODUCTS=[{id:"mayai",name:"Mayai (Tray 30)",price:600},{id:"spinach",name:"Spinach",price:30},{id:"sukuma",name:"Sukuma Wiki",price:30},{id:"kunde",name:"Kunde",price:40},{id:"managu",name:"Managu",price:50},{id:"mitoo",name:"Mitoo / Marejea",price:40},{id:"mrenda",name:"Mrenda",price:40}];
+let cart={}; let myLat=null,myLng=null,myLink="";
 function render(){
- let html="";
- PRODUCTS.forEach(p=>{
-   const q=cart[p.id]||0;
-   html+=`<div class="card"><div><b>${p.name}</b><br><small>${p.price} KES</small></div>
-   <div class="qty"><button onclick="chg('${p.id}',-1)">-</button><span>${q}</span><button onclick="chg('${p.id}',1)">+</button></div></div>`;
- });
- document.getElementById('products').innerHTML=html;
- updateTotal();
+ let h=""; PRODUCTS.forEach(p=>{ let q=cart[p.id]||0; h+=`<div class="card"><div><b>${p.name}</b><br><small>${p.price} KES</small></div><div class="qty"><button onclick="chg('${p.id}',-1)">-</button><span>${q}</span><button onclick="chg('${p.id}',1)">+</button></div></div>`; }); document.getElementById('products').innerHTML=h; updateTotal();
 }
-function chg(id,d){
- cart[id]=(cart[id]||0)+d;
- if(cart[id]<=0) delete cart[id];
- render();
-}
+function chg(id,d){cart[id]=(cart[id]||0)+d; if(cart[id]<=0) delete cart[id]; render();}
 function updateTotal(){
- let sum=0, list=[];
- for(let id in cart){
-   let pr=PRODUCTS.find(x=>x.id===id);
-   sum+=pr.price*cart[id];
-   list.push(`${pr.name} x${cart[id]}`);
- }
- let totalDisplay = sum>0 ? sum+20 : 20;
- document.getElementById('jumla').innerText=`Jumla: ${sum} + 20 = ${totalDisplay} KES`;
- let btn=document.getElementById('orderBtn');
- if(sum>0){
-   btn.innerText=`ORDER SASA - ${totalDisplay} KES`;
-   btn.classList.add('active');
- }else{
-   btn.innerText=`CHAGUA MBOGA KWANZA`;
-   btn.classList.remove('active');
- }
- return {sum,total:totalDisplay,details:list};
+ let sum=0,list=[]; for(let id in cart){ let pr=PRODUCTS.find(x=>x.id===id); sum+=pr.price*cart[id]; list.push(`${pr.name} x${cart[id]}`); } let totalDisplay=sum>0?sum+20:20; document.getElementById('jumla').innerText=`Jumla: ${sum} + 20 = ${totalDisplay} KES`; let btn=document.getElementById('orderBtn'); if(sum>0){btn.innerText=`ORDER SASA - ${totalDisplay} KES`; btn.classList.add('active');} else{btn.innerText=`CHAGUA MBOGA KWANZA`; btn.classList.remove('active');} return {sum,total:totalDisplay,details:list};
 }
-
 render();
-
-// RAMANI
-document.getElementById('ramaniBtn').onclick=()=>{
- navigator.geolocation.getCurrentPosition(pos=>{
-   myLat=pos.coords.latitude; myLng=pos.coords.longitude;
-   myLink=`https://www.google.com/maps?q=${myLat},${myLng}`;
-   alert("Pin imewekwa! "+myLink);
-   document.getElementById('ramaniBtn').innerText="✅ MAHALI PAMEWEKWA - "+myLat.toFixed(4);
- },()=>alert("Ruhusu location"));
-};
-
-// ORDER - NAMBARI MBILI + AIRTABLE
+document.getElementById('ramaniBtn').onclick=()=>{ navigator.geolocation.getCurrentPosition(pos=>{ myLat=pos.coords.latitude; myLng=pos.coords.longitude; myLink=`https://www.google.com/maps?q=${myLat},${myLng}`; alert("Pin imewekwa!"); document.getElementById('ramaniBtn').innerText="✅ MAHALI PAMEWEKWA"; },()=>alert("Ruhusu location")); };
 document.getElementById('orderBtn').onclick=async()=>{
- let {sum,total,details}=updateTotal();
- if(sum===0){alert("Chagua mboga kwanza");return;}
- let jina=document.getElementById('jina').value;
- let phone=document.getElementById('phone').value;
- let maelezo=document.getElementById('maelezo').value;
- let custom=document.getElementById('customMboga').value;
- if(!jina||!phone){alert("Weka Jina na Phone");return;}
- if(!myLink){alert("Bonyeeza ONYESHA RAMANI kwanza");return;}
-
- let fullOrder = details.join(", ");
- if(custom) fullOrder+=` | Ziada: ${custom}`;
-
- // 1. AIRTABLE
- try{
- await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`,{
-   method:"POST",
-   headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},
-   body:JSON.stringify({fields:{
-     "Client name":jina,
-     "Phone number":phone,
-     "Price":total,
-     "Location link":myLink,
-     "Latitude":myLat,
-     "Longitude":myLng,
-     "Order date":new Date().toISOString().split('T')[0],
-     "Order status":"Pending",
-     "Order details":` ${fullOrder} | Maelezo: ${maelezo}`
-   }})
- });
- }catch(e){console.log(e)}
-
- // 2. WHATSAPP WOTE WAWILI MARA MOJA
- let msg=`*SABATIA FRESH MBOGA*%0AClient: ${jina}%0APhone: ${phone}%0AOrder: ${fullOrder}%0AMaelezo: ${maelezo}%0AJumla: ${total} KES%0ALocation: ${myLink}`;
- window.open(`https://wa.me/254790326587?text=${msg}`,"_blank");
- setTimeout(()=>{window.open(`https://wa.me/254111810602?text=${msg}`,"_blank");},700);
- alert("Order imetumwa kwa Admin wote wawili!");
+ let {sum,total,details}=updateTotal(); if(sum===0){alert("Chagua mboga");return;} let jina=document.getElementById('jina').value; let phone=document.getElementById('phone').value; let maelezo=document.getElementById('maelezo').value; let custom=document.getElementById('customMboga').value; if(!jina||!phone){alert("Weka Jina na Phone");return;} if(!myLink){alert("Bonyeeza Ramani");return;} let fullOrder=details.join(", "); if(custom) fullOrder+=` | Ziada: ${custom}`;
+ try{ await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`,{method:"POST",headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},body:JSON.stringify({fields:{"Client name":jina,"Phone number":phone,"Price":total,"Location link":myLink,"Latitude":myLat,"Longitude":myLng,"Order date":new Date().toISOString().split('T')[0],"Order status":"Pending","Order details":`${fullOrder} | Maelezo: ${maelezo}`}})}); }catch(e){console.log(e);}
+ let msg=`*SABATIA FRESH MBOGA*%0AClient: ${jina}%0APhone: ${phone}%0AOrder: ${fullOrder}%0AMaelezo: ${maelezo}%0AJumla: ${total} KES%0ALocation: ${myLink}`; window.open(`https://wa.me/254790326587?text=${msg}`,"_blank"); setTimeout(()=>{window.open(`https://wa.me/254111810602?text=${msg}`,"_blank");},800); alert("Order imetumwa kwa Admin wote wawili!");
 };
-
-// ADMIN - BONYEZA KICHWA MARA 5
-let taps=0;
-document.getElementById('headerTap').onclick=()=>{
- taps++;
- if(taps>=5){
-   taps=0;
-   let p=prompt("Ingiza Admin Password:");
-   if(p==="1234"){
-     alert("Admin Mode ON");
-     document.getElementById('adminPanel').style.display='block';
-     loadAdmin();
-   }
- }
-};
-function showShop(){document.getElementById('adminPanel').style.display='none';}
-function logout(){document.getElementById('adminPanel').style.display='none';}
+let taps=0; document.getElementById('headerTap').onclick=()=>{ taps++; if(taps>=5){ taps=0; let p=prompt("Ingiza Admin Password:"); if(p==="1234"){ document.getElementById('adminPanel').style.display='block'; loadAdmin(); } } };
+function showShop(){document.getElementById('adminPanel').style.display='none';} function logout(){document.getElementById('adminPanel').style.display='none';}
 async function loadAdmin(){
- try{
-   let res=await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?sort[0][field]=Order date&sort[0][direction]=desc`,{headers:{"Authorization":`Bearer ${TOKEN}`}});
-   let data=await res.json();
-   let html="";
-   data.records.forEach(rec=>{
-     let f=rec.fields;
-     let done=f["Order status"]==="Delivered";
-     html+=`<div style="background:white;margin:8px;padding:10px;border-radius:10px;${done?'background:#d4edda':''}">
-     <b>${f["Client name"]||''}</b> - ${f["Phone number"]||''}<br>
-     ${f["Order details"]||''}<br>
-     ${f.Price||''} KES - <a href="${f["Location link"]||''}" target="_blank">Ramani</a><br>
-     Status: ${f["Order status"]||'Pending'}<br>
-     ${!done?`<button onclick="approve('${rec.id}')" style="background:#2e7d32;color:white;border:none;padding:8px;border-radius:6px;margin-top:5px">✅ Approve Delivered</button>`:'✅ Delivered'}
-     </div>`;
-   });
-   document.getElementById('adminList').innerHTML=html||"Hakuna orders bado";
- }catch(e){
-   document.getElementById('adminList').innerHTML="Weka TOKEN kwanza kwenye code. Orders zitaonekana hapa.";
- }
+ try{ let res=await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?sort[0][field]=Order date&sort[0][direction]=desc`,{headers:{"Authorization":`Bearer ${TOKEN}`}}); let data=await res.json(); let html=""; data.records.forEach(rec=>{ let f=rec.fields; let done=f["Order status"]==="Delivered"; html+=`<div style="background:white;margin:8px;padding:12px;border-radius:10px;${done?'background:#d4edda;border:2px solid #2e7d32':''}"><b>${f["Client name"]||''}</b> - ${f["Phone number"]||''}<br>${f["Order details"]||''}<br>${f.Price||''} KES - <a href="${f["Location link"]||''}" target="_blank">📍 Ramani</a><br>Status: <b style="${done?'color:green':''}">${f["Order status"]||'Pending'}</b><br>${!done?`<button onclick="approve('${rec.id}')" style="background:#2e7d32;color:white;border:none;padding:9px 14px;border-radius:6px;margin-top:6px">✅ Approve Delivered</button>`:'✅ Iko Delivered - PROOF'}</div>`; }); document.getElementById('adminList').innerHTML=html||"Hakuna orders"; }catch(e){ document.getElementById('adminList').innerHTML="Error: "+e; }
 }
-async function approve(id){
- await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`,{
-   method:"PATCH",
-   headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},
-   body:JSON.stringify({fields:{"Order status":"Delivered"}})
- });
- loadAdmin();
-}
+async function approve(id){ await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`,{method:"PATCH",headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},body:JSON.stringify({fields:{"Order status":"Delivered"}})}); loadAdmin(); }
 </script>
 </body>
 </html>
