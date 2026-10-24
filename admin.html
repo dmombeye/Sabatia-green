@@ -1,69 +1,38 @@
 <!DOCTYPE html>
-<html lang="sw">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - Sabatia Fresh</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-body{font-family:sans-serif;background:#f8fafc;margin:0;padding:10px}
-.header{background:#166534;color:white;padding:12px;border-radius:10px;text-align:center}
-.card{background:white;border-radius:10px;padding:12px;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
-#map{height:400px;border-radius:10px;margin:10px 0}
-.btn{padding:6px 10px;border:none;border-radius:6px;margin:2px;cursor:pointer}
-.btn-green{background:#22c55e;color:white}
-.btn-yellow{background:#eab308}
-.btn-red{background:#ef4444;color:white}
-.btn-blue{background:#2563eb;color:white}
-</style>
-</head>
+<html>
+<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin - Sabatia</title></head>
 <body>
-<div class="header">
-<h3>🔧 Admin Panel - Sabatia Fresh Mboga</h3>
-<div style="font-size:12px">Orders zina Live kutoka Airtable + Ramani ya Vihiga</div>
-<button class="btn btn-blue" onclick="loadOrders()">🔄 Refresh Orders</button>
-<a href="index.html"><button class="btn" style="background:white">⬅️ Rudi kwa App</button></a>
-</div>
-<div id="map"></div>
-<div id="orders">Inapakia orders...</div>
+<h2>Admin - Approve Delivered</h2>
+<div id="list">Loading...</div>
 <script>
-const AIRTABLE_TOKEN = "patZl3EzfBiQzpgay.82e56dc880c81734a7a0863352030eb4b8cd0398ca365b369df157ad50702212";
-const BASE_ID = "appr6dhzTBVcG72LT";
-const TABLE_ID = "tbl2qLiyi1pb0CXv4";
-let map = L.map('map').setView([0.05, 34.75], 11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-let markers = [];
-async function loadOrders(){
- document.getElementById('orders').innerHTML='Inapakia...';
- try{
-   const res = await fetch('https://api.airtable.com/v0/'+BASE_ID+'/'+TABLE_ID+'?sort%5B0%5D%5Bfield%5D=Order%20Date&sort%5B0%5D%5Bdirection%5D=desc', {headers:{'Authorization':'Bearer '+AIRTABLE_TOKEN}});
-   const data = await res.json();
-   if(data.error){document.getElementById('orders').innerHTML='Error: '+data.error.message; return;}
-   const records = data.records;
-   if(markers.length){markers.forEach(m=>map.removeLayer(m)); markers=[];}
-   let html='';
-   if(!records.length){html='<div class="card">Hakuna orders bado. Weka order kwa app kwanza.</div>';}
-   records.forEach(rec=>{
-     const f=rec.fields;
-     const lat=f.Latitude, lng=f.Longitude;
-     const status=f['Order Status']||'Pending';
-     const color = status==='Pending'?'orange':status==='In Transit'?'blue':status==='Delivered'?'green':'red';
-     html+='<div class="card"><b>'+(f['Client Name']||'Mteja')+'</b> - '+(f['Phone Number']||'')+'<br>📦 '+(f['Product Name']||'')+'<br>Qty: '+(f.Quantity||'')+' | Price: '+(f.Price||'')+' KES<br>📍 '+(f['Location Name']||'')+'<br><small>'+(f.Notes||'')+'</small><br>Status: <span style="color:'+color+';font-weight:bold">'+status+'</span><br><button class="btn btn-yellow" onclick="updateStatus(\''+rec.id+'\',\'In Transit\')">🚚 In Transit</button><button class="btn btn-green" onclick="updateStatus(\''+rec.id+'\',\'Delivered\')">✅ Delivered</button><button class="btn btn-red" onclick="updateStatus(\''+rec.id+'\',\'Failed\')">❌ Failed</button> '+(lat&&lng?'<a href="https://www.google.com/maps?q='+lat+','+lng+'" target="_blank"><button class="btn btn-blue">🗺️ Fungua Ramani</button></a>':'')+'</div>';
-     if(lat&&lng){
-       const m=L.marker([lat,lng]).addTo(map).bindPopup('<b>'+(f['Client Name']||'Mteja')+'</b><br>'+(f['Product Name']||'')+'<br>Status: '+status);
-       markers.push(m);
-     }
-   });
-   document.getElementById('orders').innerHTML=html;
-   if(markers.length){let group=new L.featureGroup(markers); map.fitBounds(group.getBounds().pad(0.2));}
- }catch(e){document.getElementById('orders').innerHTML='Imeshindwa: '+e.message;}
+const BASE_ID="appr6dhzTBVcG72LT";
+const TABLE_ID="tblYhkWRGvILFlaps";
+const TOKEN="patYAKO_HAPA";
+async function load(){
+  const r=await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?sort[0][field]=Order date&sort[0][direction]=desc`,{headers:{"Authorization":`Bearer ${TOKEN}`}});
+  const d=await r.json();
+  let h="";
+  d.records.forEach(rec=>{
+    const f=rec.fields;
+    const isDelivered = f["Order status"]==="Delivered";
+    h+=`<div style="border:1px solid #ccc;padding:10px;margin:10px;${isDelivered?'background:#d4edda':''}">
+    <b>${f["Client name"]||''}</b> - ${f["Phone number"]||''} - ${f.Price||780} KES<br>
+    <a href="${f["Location link"]||''}" target="_blank">🗺️ Ramani</a><br>
+    Status: <b>${f["Order status"]||'Pending'}</b><br>
+    ${!isDelivered?`<button onclick="approve('${rec.id}')">✅ APPROVE DELIVERED</button>`: `✅ Imesha-Delivered`}
+    </div>`;
+  });
+  document.getElementById('list').innerHTML=h;
 }
-async function updateStatus(id, newStatus){
- await fetch('https://api.airtable.com/v0/'+BASE_ID+'/'+TABLE_ID+'/'+id, {method:'PATCH', headers:{'Authorization':'Bearer '+AIRTABLE_TOKEN,'Content-Type':'application/json'}, body:JSON.stringify({fields:{'Order Status':newStatus}})});
- loadOrders();
+async function approve(id){
+  await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`,{
+    method:"PATCH",
+    headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},
+    body:JSON.stringify({fields:{"Order status":"Delivered"}})
+  });
+  load();
 }
-loadOrders();
+load();
 </script>
 </body>
 </html>
