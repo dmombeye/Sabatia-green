@@ -1,53 +1,116 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sabatia Greens</title></head>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sabatia Greens - 780 KES</title>
+<style>
+body{font-family:sans-serif;padding:15px;background:#f5f9f5}
+.card{background:white;padding:12px;margin:8px 0;border-radius:10px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 3px #0001}
+button{padding:10px 15px;border:none;border-radius:8px;font-weight:bold}
+.add{background:#e8f5e9;color:#2e7d32}
+.order{background:#2e7d32;color:white;width:100%;padding:15px;font-size:18px;margin-top:15px}
+input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ccc;box-sizing:border-box}
+.total{font-size:20px;font-weight:bold;text-align:right;margin:10px 0}
+</style>
+</head>
 <body>
-<h2>Sabatia Greens - 780 KES</h2>
-<input id="client" placeholder="Jina"><br><br>
-<input id="phone" placeholder="Phone"><br><br>
-<button id="orderBtn">ORDER SASA</button>
+<h2>🥬 Sabatia Greens - Fresh Mboga</h2>
+<p>Chagua mboga zako - Delivery 780 KES bundle</p>
+
+<div id="products"></div>
+
+<div class="total">Total: <span id="total">780</span> KES</div>
+
+<h3>Details zako:</h3>
+<input id="client" placeholder="Jina lako">
+<input id="phone" placeholder="Phone 07...">
+
+<button class="order" id="orderBtn">🛒 ORDER SASA + Tuma Location</button>
+
 <script>
 const BASE_ID="appr6dhzTBVcG72LT";
 const TABLE_ID="tblYhkWRGvILFlaps";
-const TOKEN="patYAKO_HAPA"; // Weka token yako hapa
+const TOKEN="patYAKO_HAPA"; // Weka token yako!
+
+const items=[
+  {name:"Sukuma Wiki Bundle", price:200, id:"sukuma"},
+  {name:"Spinach Fresh", price:200, id:"spinach"},
+  {name:"Managu (African Nightshade)", price:250, id:"managu"},
+  {name:"Terere + Kunde Mix", price:250, id:"terere"},
+  {name:"FULL BUNDLE (All 4 + Delivery)", price:780, id:"bundle", default:true}
+];
+
+let cart={bundle:1};
+function render(){
+  const div=document.getElementById('products');
+  div.innerHTML="";
+  items.forEach(it=>{
+    const qty=cart[it.id]||0;
+    div.innerHTML+=`<div class="card">
+      <div><b>${it.name}</b><br>${it.price} KES</div>
+      <div>
+        <button class="add" onclick="changeQty('${it.id}',-1)">-</button>
+        <span style="padding:0 8px">${qty}</span>
+        <button class="add" onclick="changeQty('${it.id}',1)">+</button>
+      </div>
+    </div>`;
+  });
+  calcTotal();
+}
+function changeQty(id,delta){
+  cart[id]=(cart[id]||0)+delta;
+  if(cart[id]<=0) delete cart[id];
+  if(id==='bundle' && cart[id]>0){ cart={bundle:1}; } // Bundle ndio default
+  if(id!=='bundle' && cart[id]>0){ delete cart.bundle; }
+  if(Object.keys(cart).length===0){ cart={bundle:1}; }
+  render();
+}
+function calcTotal(){
+  let t=0;
+  let details=[];
+  for(let id in cart){
+    const it=items.find(x=>x.id===id);
+    t+=it.price*cart[id];
+    details.push(`${it.name} x${cart[id]}`);
+  }
+  if(t===0) t=780;
+  document.getElementById('total').innerText=t;
+  return {total:t, details:details.join(", ")};
+}
+render();
 
 document.getElementById('orderBtn').onclick=()=>{
   const client=document.getElementById('client').value;
   const phone=document.getElementById('phone').value;
-  if(!client||!phone){alert("Jaza jina na phone");return;}
+  if(!client||!phone){alert("Weka Jina na Phone");return;}
+  const {total, details}=calcTotal();
 
   navigator.geolocation.getCurrentPosition(async pos=>{
     const lat=pos.coords.latitude;
     const lng=pos.coords.longitude;
     const mapLink=`https://www.google.com/maps?q=${lat},${lng}`;
-    
-    // 1. SAVE AIRTABLE
+
     await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`,{
       method:"POST",
       headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},
       body:JSON.stringify({fields:{
         "Client name":client,
         "Phone number":phone,
-        "Price":780,
+        "Price":total,
         "Location link":mapLink,
         "Latitude":lat,
         "Longitude":lng,
         "Order date":new Date().toISOString().split('T')[0],
         "Order status":"Pending",
-        "Order details":`780 KES - ${client}`
+        "Order details":details
       }})
     });
 
-    // 2. WHATSAPP KWA WOTE WAWILI MARA MOJA
-    const msg=`*SABATIA ORDER MPYA*%0A%0AClient: ${client}%0APhone: ${phone}%0APrice: 780 KES%0ALocation: ${mapLink}%0A%0ALat: ${lat} Lng: ${lng}`;
-    const n1="254790326587";
-    const n2="254111810602";
-    
-    window.open(`https://wa.me/${n1}?text=${msg}`,"_blank");
-    setTimeout(()=>{ window.open(`https://wa.me/${n2}?text=${msg}`,"_blank"); }, 800);
-    
-    alert("Order imetumwa kwa Admin wote wawili!");
-  },()=>{alert("Ruhusu Location kwanza");});
+    const msg=`*SABATIA GREENS ORDER*%0AClient: ${client}%0APhone: ${phone}%0AOrder: ${details}%0ATotal: ${total} KES%0AMaps: ${mapLink}`;
+    window.open(`https://wa.me/254790326587?text=${msg}`,"_blank");
+    setTimeout(()=>{window.open(`https://wa.me/254111810602?text=${msg}`,"_blank");},800);
+    alert("Asante! Order imetumwa!");
+  },()=>alert("Ruhusu Location"));
 }
 </script>
 </body>
