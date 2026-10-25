@@ -6,12 +6,17 @@
 <title>Admin - Sabatia Fresh</title>
 <style>
 body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:15px}
-.card{background:white;border-radius:12px;padding:20px;max-width:400px;margin:30px auto;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.card{background:white;border-radius:12px;padding:20px;max-width:400px;margin:20px auto;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.order-card{background:white;border-radius:12px;padding:15px;margin:15px auto;max-width:600px;box-shadow:0 2px 8px rgba(0,0,0,0.1);border-left:5px solid #16a34a}
 input{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;margin:8px 0}
-button{width:100%;padding:12px;border-radius:8px;border:none;font-weight:bold;cursor:pointer}
+button{padding:10px 14px;border-radius:8px;border:none;font-weight:bold;cursor:pointer;margin:4px}
 .btn-green{background:#16a34a;color:white}
-.btn-blue{background:#2563eb;color:white;margin-top:10px}
-.box{margin-top:15px;background:#fef3c7;padding:10px;border-radius:8px}
+.btn-blue{background:#2563eb;color:white}
+.btn-red{background:#dc2626;color:white}
+.btn-gray{background:#e5e7eb}
+.item-row{display:flex;justify-content:space-between;align-items:center;background:#f9fafb;padding:8px;border-radius:6px;margin:5px 0}
+.delivered{background:#dcfce7}
+.failed{background:#fee2e2}
 </style>
 </head>
 <body>
@@ -19,26 +24,27 @@ button{width:100%;padding:12px;border-radius:8px;border:none;font-weight:bold;cu
 <h2 style="text-align:center;color:#166534">🔐 Admin Login</h2>
 <input id="user" placeholder="Username (sabatia)">
 <input id="pass" type="password" placeholder="Password (1234)">
-<button class="btn-green" onclick="login()">INGIA</button>
+<button class="btn-green" style="width:100%" onclick="login()">INGIA</button>
 <p id="msg" style="color:red;text-align:center"></p>
-<button class="btn-blue" onclick="window.location.href='index.html'">⬅️ Rudi Home</button>
+<button class="btn-blue" style="width:100%;margin-top:10px" onclick="window.location.href='index.html'">⬅️ Rudi Home</button>
 </div>
 
-<div id="adminPanel" class="card" style="display:none;max-width:600px">
-<h2>✅ Admin Mode ON</h2>
-<p>Karibu Dennis!</p>
-<div class="box">
-<b>Orders zitakuja hapa (baada ya ku-link na Google Sheet)</b><br><br>
-- Utaona Order Number<br>
-- Location ya client<br>
-- Kila product: Delivered / Failed<br>
-- Jumla
+<div id="adminPanel" style="display:none">
+<div style="max-width:600px;margin:0 auto;display:flex;justify-content:space-between;align-items:center">
+<h2>✅ Admin - Orders</h2>
+<button class="btn-blue" onclick="logout()">Logout</button>
 </div>
-<button class="btn-blue" onclick="window.location.href='index.html'">Rudi kwenye Shop</button>
-<button class="btn-green" style="margin-top:10px" onclick="logout()">Logout</button>
+<div style="max-width:600px;margin:0 auto;display:flex;gap:10px">
+<button class="btn-green" onclick="loadOrders()">🔄 Refresh Orders</button>
+<button class="btn-blue" onclick="window.location.href='index.html'">🏠 Shop</button>
+</div>
+<div id="ordersList" style="margin-top:15px;text-align:center">Loading orders...</div>
 </div>
 
 <script>
+// WEKA HAPA URL YAKO YA GOOGLE SCRIPT!
+var GOOGLE_URL = "https://script.google.com/macros/s/AKfycbz.../exec"; // BADILISHA!
+
 function login(){
   const u=document.getElementById('user').value.trim();
   const p=document.getElementById('pass').value.trim();
@@ -46,18 +52,92 @@ function login(){
     localStorage.setItem("isAdmin","true");
     document.getElementById('loginBox').style.display="none";
     document.getElementById('adminPanel').style.display="block";
+    loadOrders();
   } else {
     document.getElementById('msg').innerText="❌ Username au password sio sahihi. Jaribu sabatia / 1234";
   }
 }
 function logout(){
   localStorage.removeItem("isAdmin");
-  window.location.href="index.html";
+  location.reload();
 }
-// Kama alishalogin tayari
 if(localStorage.getItem("isAdmin")==="true"){
   document.getElementById('loginBox').style.display="none";
   document.getElementById('adminPanel').style.display="block";
+  loadOrders();
+}
+
+function loadOrders(){
+  if(GOOGLE_URL.includes("AKfycbz...")){
+    document.getElementById('ordersList').innerHTML = "<div class='card'>⚠️ Weka GOOGLE_URL kwanza kwenye code!<br><br>1. Nenda sheets.google.com<br>2. Extensions > Apps Script<br>3. Deploy > Copy URL<br>4. Weka hapa juu ya script</div>";
+    return;
+  }
+  document.getElementById('ordersList').innerHTML="Loading orders...";
+  fetch(GOOGLE_URL).then(r=>r.json()).then(data=>{
+    if(!data || data.length===0){
+      document.getElementById('ordersList').innerHTML="<div class='card'>Hakuna orders bado</div>";
+      return;
+    }
+    let html="";
+    // Reverse - newest first
+    for(let i=data.length-1; i>=0; i--){
+      let f=data[i];
+      let locationName = f["Location name"] || f["Order details"] || "";
+      let price = f["Price"] || 0;
+      let client = f["Client name"] || "Customer";
+      let phone = f["Phone number"] || "";
+      let link = f["Location link"] || "#";
+      let status = f["Order status"] || "Pending";
+      let delivered = f["Delivered items"] || "[]";
+      
+      // Parse products from Location name (e.g., "Mayai x1, Spinach x2")
+      let products = locationName.split(',').map(p=>p.trim()).filter(p=>p);
+      
+      html+=`<div class="order-card">
+        <b>🧾 Order #${f.rowId || i+1} - ${client}</b> <span style="float:right;background:${status==='Pending'?'#fef3c7':'#dcfce7'};padding:3px 8px;border-radius:10px;font-size:12px">${status}</span><br>
+        <small>📞 ${phone} | 💰 ${price} KES | 📅 ${f["Order date"]||''}</small><br>
+        <a href="${link}" target="_blank" style="color:#2563eb;font-size:13px">📍 Ona Ramani</a><br><br>`;
+      
+      // Kila product na Delivered/Failed
+      products.forEach((prod, idx)=>{
+        html+=`<div class="item-row" id="item-${i}-${idx}">
+          <span>${prod}</span>
+          <div>
+            <button class="btn-green" onclick="markDelivered(${i},${idx},'delivered')">✅ Delivered</button>
+            <button class="btn-red" onclick="markDelivered(${i},${idx},'failed')">❌ Failed</button>
+          </div>
+        </div>`;
+      });
+      
+      html+=`<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-green" onclick="approveAll(${i})">✅ Approve All</button>
+        <button class="btn-blue" onclick="whatsappClient('${phone}','${client}','${locationName}')">💬 WhatsApp Client</button>
+      </div>
+      <div style="margin-top:8px;font-weight:bold">Jumla Delivered: <span id="total-${i}">${price} KES (bado)</span></div>
+      </div>`;
+    }
+    document.getElementById('ordersList').innerHTML=html;
+  }).catch(e=>{
+    document.getElementById('ordersList').innerHTML="<div class='card'>Error: "+e+"<br>Hakikisha GOOGLE_URL sahihi na deployment ni 'Anyone'</div>";
+  });
+}
+
+function markDelivered(orderIdx, itemIdx, type){
+  let row = document.getElementById(`item-${orderIdx}-${itemIdx}`);
+  if(type==='delivered'){
+    row.className="item-row delivered";
+  } else {
+    row.className="item-row failed";
+  }
+}
+
+function approveAll(orderIdx){
+  alert("✅ Order #"+(orderIdx+1)+" Approved! (Baadaye tuta-save kwenye Sheet)");
+}
+
+function whatsappClient(phone, client, order){
+  let msg = `Habari ${client}, order yako ${order} iko tayari. Asante kwa Sabatia Fresh Mboga!`;
+  window.open(`https://wa.me/${phone.replace(/^0/,'254')}?text=${encodeURIComponent(msg)}`,"_blank");
 }
 </script>
 </body>
