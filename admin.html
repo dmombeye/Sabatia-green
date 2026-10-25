@@ -1,38 +1,64 @@
 <!DOCTYPE html>
-<html>
-<head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin - Sabatia</title></head>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Sabatia Fresh</title>
+<style>
+body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:15px}
+.card{background:white;border-radius:12px;padding:20px;max-width:400px;margin:30px auto;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+input{width:100%;padding:12px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;margin:8px 0}
+button{width:100%;padding:12px;border-radius:8px;border:none;font-weight:bold;cursor:pointer}
+.btn-green{background:#16a34a;color:white}
+.btn-blue{background:#2563eb;color:white;margin-top:10px}
+.box{margin-top:15px;background:#fef3c7;padding:10px;border-radius:8px}
+</style>
+</head>
 <body>
-<h2>Admin - Approve Delivered</h2>
-<div id="list">Loading...</div>
+<div id="loginBox" class="card">
+<h2 style="text-align:center;color:#166534">🔐 Admin Login</h2>
+<input id="user" placeholder="Username (sabatia)">
+<input id="pass" type="password" placeholder="Password (1234)">
+<button class="btn-green" onclick="login()">INGIA</button>
+<p id="msg" style="color:red;text-align:center"></p>
+<button class="btn-blue" onclick="window.location.href='index.html'">⬅️ Rudi Home</button>
+</div>
+
+<div id="adminPanel" class="card" style="display:none;max-width:600px">
+<h2>✅ Admin Mode ON</h2>
+<p>Karibu Dennis!</p>
+<div class="box">
+<b>Orders zitakuja hapa (baada ya ku-link na Google Sheet)</b><br><br>
+- Utaona Order Number<br>
+- Location ya client<br>
+- Kila product: Delivered / Failed<br>
+- Jumla
+</div>
+<button class="btn-blue" onclick="window.location.href='index.html'">Rudi kwenye Shop</button>
+<button class="btn-green" style="margin-top:10px" onclick="logout()">Logout</button>
+</div>
+
 <script>
-const BASE_ID="appr6dhzTBVcG72LT";
-const TABLE_ID="tblYhkWRGvILFlaps";
-const TOKEN="patYAKO_HAPA";
-async function load(){
-  const r=await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}?sort[0][field]=Order date&sort[0][direction]=desc`,{headers:{"Authorization":`Bearer ${TOKEN}`}});
-  const d=await r.json();
-  let h="";
-  d.records.forEach(rec=>{
-    const f=rec.fields;
-    const isDelivered = f["Order status"]==="Delivered";
-    h+=`<div style="border:1px solid #ccc;padding:10px;margin:10px;${isDelivered?'background:#d4edda':''}">
-    <b>${f["Client name"]||''}</b> - ${f["Phone number"]||''} - ${f.Price||780} KES<br>
-    <a href="${f["Location link"]||''}" target="_blank">🗺️ Ramani</a><br>
-    Status: <b>${f["Order status"]||'Pending'}</b><br>
-    ${!isDelivered?`<button onclick="approve('${rec.id}')">✅ APPROVE DELIVERED</button>`: `✅ Imesha-Delivered`}
-    </div>`;
-  });
-  document.getElementById('list').innerHTML=h;
+function login(){
+  const u=document.getElementById('user').value.trim();
+  const p=document.getElementById('pass').value.trim();
+  if(u==="sabatia" && p==="1234"){
+    localStorage.setItem("isAdmin","true");
+    document.getElementById('loginBox').style.display="none";
+    document.getElementById('adminPanel').style.display="block";
+  } else {
+    document.getElementById('msg').innerText="❌ Username au password sio sahihi. Jaribu sabatia / 1234";
+  }
 }
-async function approve(id){
-  await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${id}`,{
-    method:"PATCH",
-    headers:{"Authorization":`Bearer ${TOKEN}`,"Content-Type":"application/json"},
-    body:JSON.stringify({fields:{"Order status":"Delivered"}})
-  });
-  load();
+function logout(){
+  localStorage.removeItem("isAdmin");
+  window.location.href="index.html";
 }
-load();
+// Kama alishalogin tayari
+if(localStorage.getItem("isAdmin")==="true"){
+  document.getElementById('loginBox').style.display="none";
+  document.getElementById('adminPanel').style.display="block";
+}
 </script>
 </body>
 </html>
