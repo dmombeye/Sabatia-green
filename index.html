@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sabatia Fresh Mboga</title>
 <style>
-body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:10px}
+body{font-family:sans-serif;background:#f0fdf4;margin:0;padding:10px;padding-bottom:80px}
 .header{text-align:center;color:#166534;font-weight:bold;font-size:22px;padding:10px}
 .box{background:white;border:1px solid #f59e0b;border-radius:12px;padding:10px;margin-top:10px}
 .box-yellow{background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:10px;margin-top:10px}
@@ -29,7 +29,8 @@ input{width:100%;padding:12px;border-radius:12px;border:1px solid #ddd;box-sizin
 <div id="mapInfo" class="box-map"></div>
 <div class="box" style="text-align:left">
 🏠 Maelezo: e.g Nyumba ya blue, kwa chief...<br>
-<input type="text" id="maelezo" placeholder="Andika maelezo yako hapa...">
+<input type="text" id="maelezo" placeholder="Andika maelezo yako hapa... (itaenda WhatsApp pekee)">
+<small style="color:#e65100">⚠️ Maelezo inaenda WhatsApp pekee, si Sheet</small>
 </div>
 <div id="products"></div>
 <div class="box" style="border:2px dashed #16a34a;background:#f0fdf4;">
@@ -41,6 +42,10 @@ input{width:100%;padding:12px;border-radius:12px;border:1px solid #ddd;box-sizin
 </div>
 <div id="orderBtnDiv"></div>
 <script>
+// ================= WEKA HAPA URL YAKO YA GOOGLE SCRIPT! =================
+var GOOGLE_URL = "https://script.google.com/macros/s/AKfycbz.../exec"; // <-- BADILISHA HAPA!
+// =========================================================================
+
 const products = [
 { id:1, name:"🥚 Mayai (Tray 30)", price:600 },
 { id:2, name:"🥬 Spinach", price:30 },
@@ -50,7 +55,7 @@ const products = [
 { id:6, name:"🌿 Mitoo / Marejea", price:40 },
 { id:7, name:"🌿 Mrenda", price:40 }
 ];
-let cart = {}; let locationLink = "";
+let cart = {}; let locationLink = ""; let lat=-0.091, lng=34.774;
 function render(){
   const div = document.getElementById('products'); div.innerHTML = "";
   products.forEach(p=>{
@@ -69,33 +74,72 @@ function updateTotal(){
   } else {
     btnDiv.innerHTML = `<button class="btn-gray" id="orderBtn">CHAGUA MBOGA KWANZA</button>`;
   }
+  return {total, has};
 }
 document.addEventListener('input', function(e){ if(e.target.id==='customMboga') updateTotal(); });
 function getLocation(){
   if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(pos=>{
-      locationLink = `https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+      lat=pos.coords.latitude; lng=pos.coords.longitude;
+      locationLink = `https://www.google.com/maps?q=${lat},${lng}`;
       document.getElementById('mapInfo').style.display="block";
-      document.getElementById('mapInfo').innerHTML = `Mahali pako pamewekwa:<br><a href="${locationLink}" target="_blank">Angalia Ramani</a>`;
-    });
-  }
+      document.getElementById('mapInfo').innerHTML = `✅ Mahali pamewekwa:<br><a href="${locationLink}" target="_blank">Angalia Ramani</a>`;
+    },()=>{alert("Ruhusu location kwanza");});
+  } else { alert("Browser haina GPS"); }
 }
 function sendOrder(){
-  let msg="*SABATIA FRESH MBOGA - ORDER MPYA:*\n\n";
-  let total=0; let has=false;
+  let msg="*🥬 SABATIA FRESH MBOGA - ORDER MPYA:*\n\n";
+  let total=0; let has=false; let orderDetails="";
   for(let id in cart){
     const p = products.find(x=>x.id==id); const sub = p.price*cart[id];
-    msg+=`${p.name} x ${cart[id]} = ${sub} KES\n`; total+=sub; has=true;
+    msg+=`${p.name} x ${cart[id]} = ${sub} KES\n`; 
+    orderDetails+=`${p.name} x ${cart[id]}, `;
+    total+=sub; has=true;
   }
   const customMboga = document.getElementById('customMboga').value.trim();
-  if(customMboga){ msg+=`\n🥬 *CUSTOMER ANAOMBA: ${customMboga}*\n`; has=true; }
+  if(customMboga){ 
+    msg+=`\n🥬 *CUSTOMER ANAOMBA: ${customMboga}*\n`; 
+    orderDetails+=`CUSTOM: ${customMboga}, `;
+    has=true; 
+  }
   if(!has){ alert("Chagua mboga au andika mboga unayotaka!"); return; }
-  const maelezo = document.getElementById('maelezo').value;
-  msg+=`\nMaelezo: ${maelezo}\n`;
-  if(locationLink) msg+=`Ramani: ${locationLink}\n`;
-  msg+=`Jumla: ${total} + 20 = ${total+20} KES\n`;
+  const maelezo = document.getElementById('maelezo').value.trim() || "Hakuna maelezo";
+  
+  // WhatsApp ina maelezo - kama ulivyosema!
+  msg+=`\n📝 *Maelezo ya Mteja:* ${maelezo}\n`;
+  if(locationLink) msg+=`📍 Ramani: ${locationLink}\n`;
+  msg+=`💰 Jumla: ${total} + 20 = ${total+20} KES\n`;
+
+  // 1. TUMA KWA GOOGLE SHEET (bila maelezo - maelezo ni WhatsApp pekee!)
+  if(!GOOGLE_URL.includes("AKfycbz...")){
+    var payload={
+      clientName:"Customer",
+      phone:"0790326587",
+      price:total+20,
+      locationName:orderDetails,
+      locationLink:locationLink,
+      latitude:lat,
+      longitude:lng,
+      orderDate:new Date().toISOString().split('T')[0],
+      orderStatus:"Pending",
+      deliveredItems:"[]"
+    };
+    fetch(GOOGLE_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    }).then(()=>{
+      console.log("Imeingia Google Sheet");
+    }).catch(e=>console.log("Sheet error",e));
+  }
+
+  // 2. TUMA WHATSAPP NA MAELEZO KAMA ZAMANI!
   window.open(`https://wa.me/254790326587?text=${encodeURIComponent(msg)}`,'_blank');
   setTimeout(()=>{ window.open(`https://wa.me/254111810602?text=${encodeURIComponent(msg)}`,'_blank'); },800);
+  
+  // Clear
+  cart={}; document.getElementById('maelezo').value=""; document.getElementById('customMboga').value="";
   render();
 }
 let adminClicks=0; let lastClick=0;
